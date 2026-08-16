@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/assets/prof_amr_logo.png" width="240" alt="Prof. AMR">
+</p>
+
+<p align="center"><sub><b>PROF. AMR</b></sub></p>
+
 # Transcritor ProfAMR 2026
 
 **Transcrição de audiências e depoimentos judiciais em português, 100% offline, com camada especializada em Direito Penal e Processo Penal.**

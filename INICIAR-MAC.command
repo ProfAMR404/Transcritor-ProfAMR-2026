@@ -7,6 +7,13 @@
 # ============================================================
 cd "$(dirname "$0")"
 
+# Cabecalho de marca (ouro discreto se o terminal suportar cor)
+G=$'\033[1;33m'; R=$'\033[0m'
+printf '\n  %s==========================================================%s\n' "$G" "$R"
+printf '    %sP R O F .   A M R%s\n' "$G" "$R"
+printf '    Transcritor de Audiencias  -  materia criminal\n'
+printf '  %s==========================================================%s\n\n' "$G" "$R"
+
 if ! command -v python3 >/dev/null 2>&1; then
   echo "[!] Python3 nao encontrado. Instale em https://www.python.org/downloads/"
   read -rp "Enter para sair..." _; exit 1
