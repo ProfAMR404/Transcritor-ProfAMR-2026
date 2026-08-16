@@ -1,0 +1,22 @@
+# Ambientes e caches Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Saidas de transcricao (podem conter dados sensiveis — NUNCA versionar)
+saida/
+*.mp4
+*.mp3
+*.wav
+*.asf
+
+# Modelos baixados
+models/
+*.bin
+*.pt
+
+# Sistema
+.DS_Store
