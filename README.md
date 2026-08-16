@@ -8,6 +8,21 @@ Ferramenta livre e gratuita para gabinetes, defensorias, promotorias e escritór
 
 ---
 
+## ▶ Usar no desktop, sem programar
+
+1. Botão verde **Code → Download ZIP** e descompacte a pasta.
+2. **Duplo clique** no lançador do seu sistema:
+   - **Windows:** `INICIAR-WINDOWS.bat`
+   - **Linux:** `INICIAR-LINUX.sh`
+   - **macOS:** `INICIAR-MAC.command`
+3. Na janela: **Escolher arquivo… → Transcrever → Salvar ata como…**
+
+Na primeira vez ele instala o motor e baixa o modelo (precisa de internet **só** nessa primeira vez); depois roda offline. Requisito: ter o [Python](https://www.python.org/downloads/) instalado (no Windows, marque *Add Python to PATH*; no Linux, `sudo apt install python3-tk`). Passo a passo completo em [`COMO-USAR.txt`](COMO-USAR.txt).
+
+**Links dos modelos e download manual (offline):** ver [`MODELOS.md`](MODELOS.md).
+
+---
+
 ## O que faz
 
 1. **Transcreve** áudio/vídeo de audiência (MP4/MP3/WAV) com **WhisperX** (modelo `large-v3`).

@@ -1,0 +1,32 @@
+TRANSCRITOR ProfAMR 2026 — COMO USAR (sem programar)
+=====================================================
+
+1) Baixe o projeto:
+   - No GitHub, botao verde "Code" -> "Download ZIP".
+   - Descompacte a pasta em algum lugar (ex.: Area de Trabalho).
+
+2) Abra o programa (duplo clique):
+   - Windows: INICIAR-WINDOWS.bat
+   - Linux:   INICIAR-LINUX.sh   (ou: bash INICIAR-LINUX.sh)
+   - macOS:   INICIAR-MAC.command (se bloquear: botao direito -> Abrir)
+
+   Na PRIMEIRA vez ele instala o necessario e baixa o modelo de
+   transcricao (precisa de internet so nesta primeira vez).
+   Isso pode levar alguns minutos. Depois, roda offline.
+
+3) Na janela que abrir:
+   - Clique em "Escolher arquivo..." e selecione o audio/video da audiencia.
+   - Deixe o modelo em "small" (bom padrao) e clique em "Transcrever".
+   - Ao terminar, clique em "Salvar ata como..." para guardar.
+
+REQUISITOS
+- Windows/macOS: instale o Python de https://www.python.org/downloads/
+  (no Windows, marque "Add Python to PATH" na instalacao).
+- Linux: sudo apt install python3 python3-venv python3-tk
+
+OBSERVACOES
+- Roda em qualquer computador (nao precisa de placa de video).
+- Com placa NVIDIA fica mais rapido e permite separar falantes (WhisperX).
+- O audio nao sai da sua maquina. Nao ligue integracoes de nuvem para
+  material sigiloso.
+- E apoio de trabalho; a ata oficial ainda pede revisao humana.
