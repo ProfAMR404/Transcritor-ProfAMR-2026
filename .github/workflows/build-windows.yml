@@ -41,6 +41,10 @@ jobs:
           --add-data "dados;dados"
           run_gui.py
 
+      - name: Incluir o criador de atalho na pasta do app
+        shell: pwsh
+        run: Copy-Item "scripts/Criar atalho na Area de Trabalho.bat" "dist/TranscritorProfAMR/"
+
       - name: Publicar o executavel (artefato para download)
         uses: actions/upload-artifact@v4
         with:

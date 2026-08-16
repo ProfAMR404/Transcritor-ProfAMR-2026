@@ -14,7 +14,7 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
-from . import __version__, paths, pipeline
+from . import __version__, atalho, paths, pipeline
 
 PASTA_DADOS = paths.pasta_dados()
 SAIDA = paths.pasta_saida()
@@ -196,13 +196,32 @@ def iniciar() -> int:
             Path(destino).write_text(txt.get("1.0", "end"), encoding="utf-8")
             messagebox.showinfo("Salvo", f"Ata salva em:\n{destino}")
 
+    def criar_atalho():
+        alvo = atalho.criar_atalho_windows()
+        if alvo:
+            messagebox.showinfo("Atalho criado",
+                                f"Atalho criado na Área de Trabalho:\n{alvo}")
+        else:
+            messagebox.showinfo(
+                "Atalho",
+                "A criação de atalho está disponível na versão executável (.exe) "
+                "no Windows.")
+
     acoes = tk.Frame(app, bg=BG)
     acoes.pack(fill="x", padx=22, pady=(8, 6))
     btn = botao(acoes, "Transcrever", transcrever, primario=True)
     btn.pack(side="left")
     botao(acoes, "Salvar ata como…", salvar_como).pack(side="left", padx=8)
+    botao(acoes, "Criar atalho", criar_atalho).pack(side="left", padx=(0, 8))
     lbl(acoes, "Offline · o áudio não sai da máquina", fg=GOLD_DEEP,
         font=F_UI).pack(side="right")
+
+    # Cria o atalho na Area de Trabalho no primeiro uso (Windows/.exe), silencioso.
+    def _atalho_inicial():
+        alvo = atalho.criar_no_primeiro_uso()
+        if alvo:
+            log(f"Atalho criado na Área de Trabalho: {alvo.name}")
+    threading.Thread(target=_atalho_inicial, daemon=True).start()
 
     # ---- Rodape com marca reduzida -----------------------------------------
     tk.Frame(app, bg=RULE, height=1).pack(fill="x", padx=22, pady=(4, 0))
