@@ -57,6 +57,27 @@ def _detectar_device() -> tuple[str, str]:
     return "cpu", "int8"
 
 
+def resolver_modelo(modelo: str, pasta_dados: Path) -> str:
+    """Se houver o modelo baixado a mao em 'modelos/<nome>', usa a pasta local
+    (funciona 100% offline, sem baixar nada). Senao, devolve o nome, e o
+    faster-whisper baixa do Hugging Face na primeira vez.
+
+    Tambem aceita a variavel de ambiente TRANSCRITOR_MODELO_DIR apontando para
+    uma pasta de modelo ja baixada, ou um caminho direto passado em 'modelo'.
+    """
+    import os
+
+    env = os.environ.get("TRANSCRITOR_MODELO_DIR")
+    if env and Path(env).exists():
+        return env
+    if Path(modelo).exists():  # ja e um caminho para uma pasta de modelo
+        return str(modelo)
+    local = pasta_dados.parent / "modelos" / modelo
+    if local.exists():
+        return str(local)
+    return modelo
+
+
 def transcrever(
     entrada: str | Path,
     pasta_dados: Path,
@@ -79,9 +100,11 @@ def transcrever(
         ) from e
 
     device, compute = _detectar_device()
+    modelo_final = resolver_modelo(modelo, pasta_dados)
+    origem = "pasta local" if modelo_final != modelo else "download automatico do HF"
     if progresso:
-        progresso(f"Carregando modelo '{modelo}' ({device}/{compute})...")
-    model = WhisperModel(modelo, device=device, compute_type=compute)
+        progresso(f"Carregando modelo '{modelo}' ({device}/{compute}) — {origem}...")
+    model = WhisperModel(modelo_final, device=device, compute_type=compute)
 
     initial_prompt = carregar_glossario(pasta_dados)
     if progresso:

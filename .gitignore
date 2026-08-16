@@ -13,8 +13,9 @@ saida/
 *.wav
 *.asf
 
-# Modelos baixados
+# Modelos baixados (pesados — nunca versionar)
 models/
+modelos/
 *.bin
 *.pt
 
