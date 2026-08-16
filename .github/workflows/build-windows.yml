@@ -1,0 +1,49 @@
+name: Build Windows EXE
+
+# Gera o executavel .exe do Transcritor numa maquina Windows do GitHub e
+# publica como artefato para download. Roda ao salvar na main ou sob demanda.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install faster-whisper pyinstaller
+
+      - name: Empacotar o .exe
+        run: >
+          pyinstaller --noconfirm --clean
+          --name TranscritorProfAMR
+          --windowed
+          --collect-all faster_whisper
+          --collect-all ctranslate2
+          --collect-all av
+          --collect-all onnxruntime
+          --collect-all tokenizers
+          --collect-all huggingface_hub
+          --add-data "dados;dados"
+          run_gui.py
+
+      - name: Publicar o executavel (artefato para download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TranscritorProfAMR-Windows
+          path: dist/TranscritorProfAMR/**
+          if-no-files-found: error
