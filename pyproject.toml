@@ -7,8 +7,17 @@ license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [{ name = "Alexandre Morais da Rosa (ProfAMR)" }]
 
+# Nucleo/demo/GUI nao exigem dependencias externas.
+# O motor de transcricao real (CPU ou GPU) e um extra opcional:
+[project.optional-dependencies]
+cpu = ["faster-whisper>=1.0"]
+build = ["pyinstaller>=6.0"]
+
 [project.scripts]
 transcritor = "transcritor.cli:main"
+
+[project.gui-scripts]
+transcritor-gui = "transcritor.gui:main"
 
 [build-system]
 requires = ["setuptools>=68"]

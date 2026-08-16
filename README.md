@@ -33,21 +33,39 @@ Ele mostra o relatório de correções, renomeia os falantes e gera os arquivos 
 
 ---
 
-## Instalação para uso real
+## Aplicativo desktop (janela, roda em qualquer máquina)
 
-O motor de transcrição (WhisperX) exige **GPU NVIDIA** (mín. 6 GB de VRAM, CUDA). Em CPU funciona, porém ~10× mais lento.
-
-- **Linux (Ubuntu/Debian):** `bash scripts/instalar-linux.sh`
-- **Windows:** via **WSL2** + `scripts/instalar-windows.ps1` (o WhisperX não roda em Windows nativo).
-
-Depois:
+Interface gráfica nativa (Tkinter): escolher arquivo → transcrever → salvar ata.
 
 ```bash
-transcritor transcrever audiencia.mp4          # transcrição + camada penal
-transcritor transcrever audiencia.mp4 --llm    # + revisão por LLM local (Ollama)
+pip install ".[cpu]"      # instala o motor de CPU (faster-whisper)
+transcritor-gui           # abre a janela
 ```
 
-Sem motor/GPU, o comando `transcrever` avisa e cai automaticamente no modo demo.
+O motor de **CPU (faster-whisper)** roda em **qualquer desktop, sem GPU** — usa CUDA automaticamente se houver placa NVIDIA. Modelos: `tiny`/`base`/`small` (rápidos) até `large-v3` (só compensa com GPU). No Linux, a janela exige `sudo apt install python3-tk`.
+
+### Gerar um executável (`.exe`) para a assessoria
+
+Empacota tudo num aplicativo que a equipe abre com duplo clique, sem instalar Python:
+
+- **Windows:** `powershell -ExecutionPolicy Bypass -File scripts/build-desktop.ps1` → `dist\TranscritorProfAMR\TranscritorProfAMR.exe`
+- **Linux/macOS:** `bash scripts/build-desktop.sh` → `dist/TranscritorProfAMR/`
+
+O modelo de transcrição é baixado no primeiro uso e fica em cache (offline depois).
+
+## Linha de comando
+
+```bash
+transcritor demo                            # emula com a amostra (sem GPU)
+transcritor transcrever audiencia.mp4       # transcrição real + camada penal
+transcritor transcrever audiencia.mp4 --llm # + revisão por LLM local (Ollama)
+```
+
+Sem motor instalado, o comando avisa e cai automaticamente no modo demo.
+
+### Alternativa GPU com diarização de falantes
+
+Para separar automaticamente Juiz/MP/Defesa/Testemunha, use a trilha **WhisperX** numa máquina com **GPU NVIDIA** (`scripts/instalar-linux.sh`, ou Windows via WSL2 com `scripts/instalar-windows.ps1`). O motor de CPU transcreve com carimbos de tempo, mas não separa falantes por conta própria — os rótulos podem ser ajustados em `dados/rotulos.json`.
 
 ---
 

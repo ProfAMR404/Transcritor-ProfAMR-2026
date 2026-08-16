@@ -5,4 +5,4 @@ Foco: Direito Penal e Processo Penal, em portugues, 100% offline.
 """
 
 __version__ = "0.1.0"
-__all__ = ["pos_penal", "rotulos", "pipeline", "llm_local"]
+__all__ = ["pos_penal", "rotulos", "pipeline", "llm_local", "asr", "gui", "cli"]
