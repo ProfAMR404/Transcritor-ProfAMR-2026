@@ -20,6 +20,7 @@ Ferramenta livre e gratuita para gabinetes, defensorias, promotorias e escritór
 Na primeira vez ele instala o motor e baixa o modelo (precisa de internet **só** nessa primeira vez); depois roda offline. Requisito: ter o [Python](https://www.python.org/downloads/) instalado (no Windows, marque *Add Python to PATH*; no Linux, `sudo apt install python3-tk`). Passo a passo completo em [`COMO-USAR.txt`](COMO-USAR.txt).
 
 **Links dos modelos e download manual (offline):** ver [`MODELOS.md`](MODELOS.md).
+**Tutorial completo (com a revisão por LLM local):** ver [`docs/TUTORIAL.md`](docs/TUTORIAL.md).
 
 ---
 
