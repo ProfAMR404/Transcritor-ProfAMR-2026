@@ -1,9 +1,15 @@
-# Nucleo (camada penal + demo): NAO exige nada alem da biblioteca padrao do Python.
-# O modo demo roda com Python 3.10+ puro.
+# Nucleo (camada penal + demo + interface grafica): NAO exige nada alem da
+# biblioteca padrao do Python. O modo demo e a GUI rodam com Python 3.10+ puro
+# (no Linux, a GUI precisa de: sudo apt install python3-tk).
 
-# --- Motor de transcricao real (instale so na maquina com GPU NVIDIA) ---
-# Descomente para uso real:
+# --- Motor de transcricao REAL (recomendado) ---
+# Roda em CPU em qualquer desktop; usa GPU automaticamente se houver CUDA.
+faster-whisper>=1.0
+
+# --- Empacotar como executavel desktop (.exe / binario) ---
+# pyinstaller>=6.0
+
+# --- Alternativa GPU com diarizacao de falantes (maquina com NVIDIA) ---
 # whisperx>=3.1
 # torch>=2.1            # instale a build CUDA correspondente a sua GPU
-# ffmpeg-python>=0.2
 # pyannote.audio>=3.1   # requer token gratuito do HuggingFace p/ diarizacao

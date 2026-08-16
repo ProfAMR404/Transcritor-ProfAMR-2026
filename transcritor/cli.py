@@ -13,10 +13,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__, pipeline
+from . import __version__, paths, pipeline
 
-RAIZ = Path(__file__).resolve().parent.parent
-PASTA_DADOS = RAIZ / "dados"
+PASTA_DADOS = paths.pasta_dados()
 
 
 def _relatorio(rel, mapa_rot) -> None:
@@ -51,7 +50,7 @@ def _executar(trechos, destino: Path, nome: str, usar_llm: bool) -> None:
 def cmd_demo(args) -> int:
     print(">> Modo DEMO (emulado, sem GPU) — amostra dados/exemplo_whisperx.json")
     trechos = pipeline.carregar_segmentos(PASTA_DADOS / "exemplo_whisperx.json")
-    _executar(trechos, RAIZ / "saida", "demo_audiencia", args.llm)
+    _executar(trechos, paths.pasta_saida(), "demo_audiencia", args.llm)
     return 0
 
 
@@ -63,17 +62,17 @@ def cmd_transcrever(args) -> int:
     motor = pipeline.motor_disponivel()
     if not motor:
         print(
-            "AVISO: nenhum motor de ASR (WhisperX/TecJustica) encontrado nem GPU.\n"
-            "       Rodando em modo DEMO com a amostra. Instale o motor para uso real.",
+            "AVISO: nenhum motor de ASR encontrado.\n"
+            "       Para transcricao real em CPU: pip install faster-whisper\n"
+            "       Rodando em modo DEMO com a amostra.",
             file=sys.stderr,
         )
         return cmd_demo(args)
     print(f">> Transcrevendo '{entrada.name}' com motor: {motor}")
-    saida_json = RAIZ / "saida" / (entrada.stem + ".json")
-    saida_json.parent.mkdir(parents=True, exist_ok=True)
-    pipeline.transcrever_real(str(entrada), saida_json, motor)
-    trechos = pipeline.carregar_segmentos(saida_json)
-    _executar(trechos, RAIZ / "saida", entrada.stem, args.llm)
+    trechos = pipeline.transcrever_entrada(
+        entrada, PASTA_DADOS, motor, paths.pasta_saida(), progresso=lambda m: print(m)
+    )
+    _executar(trechos, paths.pasta_saida(), entrada.stem, args.llm)
     return 0
 
 

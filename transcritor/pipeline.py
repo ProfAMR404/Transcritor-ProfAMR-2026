@@ -47,11 +47,41 @@ def carregar_segmentos(caminho_json: str | Path) -> List[Trecho]:
 
 
 def motor_disponivel() -> str | None:
-    """Detecta um motor de ASR real instalado. None => usar modo demo."""
+    """Detecta um motor de ASR real instalado. None => usar modo demo.
+
+    Ordem de preferencia: motores de linha de comando com diarizacao
+    (TecJustica/WhisperX, tipicamente GPU) e, por fim, o faster-whisper
+    (Python puro, roda em CPU em qualquer desktop).
+    """
     for cmd in ("tecjustica-transcribe", "whisperx"):
         if shutil.which(cmd):
             return cmd
+    from . import asr
+
+    if asr.disponivel():
+        return "faster-whisper"
     return None
+
+
+def transcrever_entrada(
+    entrada: str | Path,
+    pasta_dados: Path,
+    motor: str,
+    saida_dir: Path,
+    progresso=None,
+) -> List[Trecho]:
+    """Transcreve com o motor detectado e devolve os trechos brutos."""
+    if motor == "faster-whisper":
+        from . import asr
+
+        brutos = asr.transcrever(entrada, pasta_dados, progresso=progresso)
+        return [
+            Trecho(d["start"], d["end"], d["speaker"], d["text"]) for d in brutos
+        ]
+    saida_json = saida_dir / (Path(entrada).stem + ".json")
+    saida_json.parent.mkdir(parents=True, exist_ok=True)
+    transcrever_real(str(entrada), saida_json, motor)
+    return carregar_segmentos(saida_json)
 
 
 def transcrever_real(entrada: str, saida_json: Path, motor: str) -> Path:
