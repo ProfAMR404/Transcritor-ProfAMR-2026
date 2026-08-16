@@ -7,6 +7,14 @@ REM ============================================================
 setlocal
 cd /d "%~dp0"
 title Transcritor ProfAMR 2026
+color 0F
+
+echo(
+echo    ==========================================================
+echo      P R O F .   A M R
+echo      Transcritor de Audiencias  -  materia criminal
+echo    ==========================================================
+echo(
 
 where python >nul 2>&1
 if errorlevel 1 (
