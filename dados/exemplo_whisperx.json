@@ -1,0 +1,49 @@
+{
+  "_comentario": "Amostra que EMULA a saida do WhisperX (formato word-level com falantes). Contem erros tipicos de ASR em audiencia penal, propositalmente, para demonstrar a camada de pos-correcao penal. Nenhum dado real de processo.",
+  "idioma": "pt",
+  "modelo_simulado": "whisperx-large-v3",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 6.4,
+      "speaker": "SPEAKER_00",
+      "text": "Declaro aberta a audiencia de instrucao e julgamento nos autos da acao penal."
+    },
+    {
+      "start": 6.6,
+      "end": 15.2,
+      "speaker": "SPEAKER_01",
+      "text": "Excelencia, o ministerio publico reitera a denuncia. A materialidade esta demonstrada e o reu foi presso em flagrante pelo crime de trafico."
+    },
+    {
+      "start": 15.5,
+      "end": 24.9,
+      "speaker": "SPEAKER_01",
+      "text": "A conduta se amolda ao artigo 33 da lei de drogas, e requeremos a manutencao da prisao preemptiva por garantia da ordem publica."
+    },
+    {
+      "start": 25.3,
+      "end": 34.8,
+      "speaker": "SPEAKER_02",
+      "text": "Douto juizo, a defesa impetrou abeas corpus e sustenta a nulidade da abordagem. Nao havia fundada suspeita para a busca pessoal."
+    },
+    {
+      "start": 35.0,
+      "end": 43.7,
+      "speaker": "SPEAKER_02",
+      "text": "Requeremos a absolvicao com base no principio da insignificancia e, subsidiariamente, a aplicacao do trafico privilegiado do paragrafo 4."
+    },
+    {
+      "start": 44.1,
+      "end": 52.6,
+      "speaker": "SPEAKER_03",
+      "text": "Eu tava passando na rua quando os polici chegaram. Eu vi eles revistando o rapaz, mas eu nao vi droga nenhuma com ele."
+    },
+    {
+      "start": 53.0,
+      "end": 61.5,
+      "speaker": "SPEAKER_00",
+      "text": "Fica registrado. Na dosemetria eventual sera observada a primariedade. Defiro a juntada e declaro encerrada a instrucao."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# Glossario de vies penal (initial_prompt)
+#
+# Este texto e injetado no WhisperX como "initial_prompt": ele enviesa o
+# reconhecimento para a grafia correta do vocabulario juridico-penal, reduzindo
+# erros ANTES da transcricao (e o ganho mais barato em materia penal).
+#
+# Linhas iniciadas por # sao ignoradas. Uma expressao por linha.
+# Mantenha entre ~150 e ~220 palavras: prompts longos demais atrapalham.
+# Acrescente nomes de comarcas, varas, juizes, promotores e defensores recorrentes.
+
+Audiência de instrução e julgamento. Ação penal. Denúncia oferecida pelo Ministério Público.
+Materialidade e autoria. Réu preso em flagrante delito. Auto de prisão em flagrante.
+Prisão preventiva, prisão temporária, medidas cautelares diversas da prisão.
+Tráfico de drogas, artigo 33 da Lei 11.343 de 2006; tráfico privilegiado, parágrafo 4º.
+Associação para o tráfico, artigo 35. Porte de arma. Furto, artigo 155 do Código Penal.
+Roubo majorado, artigo 157. Estupro de vulnerável, artigo 217-A.
+Habeas corpus, mandado de segurança, recurso em sentido estrito, apelação criminal.
+Fundada suspeita, busca pessoal, busca domiciliar, cadeia de custódia.
+Princípio da insignificância, bagatela, atipicidade material.
+Dosimetria da pena, circunstâncias judiciais, atenuantes e agravantes, reincidência, primariedade.
+Regime inicial fechado, semiaberto, aberto. Substituição por penas restritivas de direitos.
+Nulidade, prova ilícita, contraditório e ampla defesa. Absolvição, condenação, prescrição.
+Excelência, douto juízo, meritíssimo. Ministério Público, Defensoria Pública, advogado de defesa.
+Testemunha, vítima, interrogatório do réu, alegações finais, garantia da ordem pública.

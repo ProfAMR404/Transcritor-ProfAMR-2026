@@ -1,0 +1,11 @@
+{
+  "_comentario": "Mapeia os rotulos automaticos de diarizacao (SPEAKER_00, SPEAKER_01, ...) para papeis processuais legiveis. Ajuste a cada audiencia: a ordem dos falantes muda. Deixe o valor vazio para manter o rotulo original.",
+  "mapa": {
+    "SPEAKER_00": "Juiz",
+    "SPEAKER_01": "Ministério Público",
+    "SPEAKER_02": "Defesa",
+    "SPEAKER_03": "Testemunha",
+    "SPEAKER_04": "",
+    "SPEAKER_05": ""
+  }
+}
