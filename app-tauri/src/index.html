@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transcritor ProfAMR 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="marca">
+    <img src="assets/logo.png" alt="Prof. AMR" class="logo">
+    <span class="wm">Prof. AMR</span>
+  </header>
+  <div class="filete"></div>
+
+  <main>
+    <p class="kicker">Transcritor de audiências · penal · offline</p>
+    <h1>Transcrição de audiência</h1>
+
+    <section class="controles">
+      <button id="btn-arquivo" class="btn">Escolher arquivo…</button>
+      <span id="arquivo" class="arquivo">Nenhum arquivo selecionado</span>
+
+      <label class="campo">Modelo
+        <select id="modelo">
+          <option value="tiny">tiny [rápido]</option>
+          <option value="base">base</option>
+          <option value="small" selected>small [padrão]</option>
+          <option value="medium">medium</option>
+          <option value="large-v3">large-v3 [GPU]</option>
+        </select>
+      </label>
+
+      <label class="check"><input type="checkbox" id="llm"> Revisar com modelo local</label>
+    </section>
+
+    <section class="acao">
+      <button id="btn-transcrever" class="btn primario">Transcrever</button>
+      <button id="btn-salvar" class="btn" disabled>Salvar ata…</button>
+      <span id="progresso" class="progresso">Pronto.</span>
+    </section>
+
+    <textarea id="ata" class="ata" spellcheck="false" placeholder="A ata aparece aqui após a transcrição. O texto é editável antes de salvar."></textarea>
+
+    <p class="rodape">Offline · o áudio não sai da máquina · a transcrição é apoio, a conferência é humana.</p>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

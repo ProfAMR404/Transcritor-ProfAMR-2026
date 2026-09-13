@@ -1,0 +1,33 @@
+:root{
+  --bg:#FFFFFF; --ink:#1A1A2E; --head:#3D3D3D; --meta:#5A5A5A;
+  --gold:#D4A853; --gold-deep:#B8860B; --rule:#E7E1D4; --soft:#FAF6EC;
+  --title:"Palatino Linotype","Book Antiqua",Palatino,"URW Palladio L",Georgia,serif;
+  --body:"Libre Caslon Text","Palatino Linotype",Georgia,serif;
+  --ui:"Inter",system-ui,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  display:flex;flex-direction:column;}
+.marca{display:flex;align-items:center;gap:12px;padding:14px 22px 12px;}
+.marca .logo{height:38px;width:auto;}
+.marca .wm{font-family:var(--ui);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;color:var(--gold-deep);}
+.filete{height:3px;background:var(--gold);margin:0 22px;border-radius:2px;}
+main{flex:1;display:flex;flex-direction:column;padding:18px 22px 10px;gap:6px;min-height:0;}
+.kicker{font-family:var(--ui);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;color:var(--gold-deep);margin:6px 0 0;}
+h1{font-family:var(--title);font-weight:700;color:var(--head);font-size:1.7rem;margin:0 0 8px;}
+.controles{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 0;}
+.arquivo{font-family:var(--ui);font-size:.9rem;color:var(--meta);}
+.campo,.check{font-family:var(--ui);font-size:.9rem;color:var(--ink);display:flex;align-items:center;gap:6px;}
+select{font-family:var(--ui);font-size:.9rem;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink);}
+.btn{font-family:var(--ui);font-size:.92rem;padding:8px 14px;border:1px solid var(--rule);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer;}
+.btn:hover{background:var(--soft);}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn.primario{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600;}
+.btn.primario:hover{background:var(--gold-deep);border-color:var(--gold-deep);}
+.acao{display:flex;align-items:center;gap:12px;padding:2px 0 8px;}
+.progresso{font-family:var(--ui);font-size:.86rem;color:var(--meta);}
+.ata{flex:1;min-height:220px;width:100%;resize:vertical;border:1px solid var(--rule);border-radius:10px;
+  padding:16px 18px;font-family:var(--body);font-size:1.02rem;line-height:1.7;color:var(--ink);background:#fff;}
+.ata:focus{outline:2px solid var(--gold);outline-offset:1px;}
+.rodape{font-family:var(--ui);font-size:.78rem;color:var(--meta);margin:6px 0 4px;}

@@ -1,0 +1,10 @@
+# Node
+node_modules/
+dist/
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Sidecar gerado localmente [pesado, por plataforma]
+src-tauri/binaries/transcritor-engine-*

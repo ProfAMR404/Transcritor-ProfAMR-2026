@@ -1,0 +1,66 @@
+<p>Transcrever uma audiência de instrução à mão consome horas que o gabinete não tem, e serviços de nuvem esbarram no sigilo do depoimento. O <strong>Transcritor ProfAMR 2026</strong> faz a primeira versão da ata em minutos, na própria máquina, sem enviar o áudio para fora.</p>
+
+<h2>O que é?</h2>
+<p>Aplicativo de <em>desktop</em>, livre [licença MIT], para transcrição de audiências e depoimentos penais em português, com uma camada de correção voltada ao vocabulário jurídico. Roda no computador do usuário, em Windows, Linux ou macOS. Não é serviço de nuvem e não substitui a ata oficial com fé pública.</p>
+
+<h2>Para que serve?</h2>
+<p>A finalidade é o trabalho interno do gabinete e da assessoria: transformar o áudio ou vídeo da audiência em texto organizado por falante, com carimbo de tempo, para leitura rápida e reaproveitamento.</p>
+<ul>
+  <li>Estudo do depoimento antes da elaboração do voto.</li>
+  <li>Localização de trechos por palavra, com o horário correspondente.</li>
+  <li>Base textual para memoriais, relatório e fundamentação.</li>
+</ul>
+
+<h2>Como funciona?</h2>
+<p>O programa combina um motor de reconhecimento de fala com uma etapa de correção. O motor tem duas opções: <em>faster-whisper</em>, que roda em qualquer computador pela CPU, e WhisperX com placa NVIDIA, que acrescenta a separação automática de falantes. Sobre o texto transcrito incide a camada penal, um conjunto de correções determinísticas que ajusta a grafia de termos e de dispositivos. A saída sai em três formatos: texto da ata, legenda com tempos e dados estruturados.</p>
+<p>Limites conhecidos: áudio ruim, ruído de sala e vozes sobrepostas degradam a transcrição. Bom microfone na sala melhora o resultado mais do que a troca de modelo. O reconhecimento de fala pode errar nomes próprios e números, o que exige conferência humana.</p>
+
+<h2>Como aplicar na prática do Direito Penal e Processo Penal?</h2>
+<p>A transcrição por máquina é <strong>apoio de trabalho</strong>, não ata oficial. A documentação audiovisual do depoimento dispensa transcrição, e a transcrição é faculdade do magistrado.</p>
+<blockquote>Resolução 105/2010 do Conselho Nacional de Justiça. Os depoimentos documentados por meio do sistema audiovisual não precisam de transcrição. A transcrição da gravação da audiência configura faculdade, e não dever do magistrado.</blockquote>
+<p>O uso recomendado é preparar o texto para consulta do próprio gabinete, sempre com revisão. Quando o material for tratado como prova, aplica-se a cadeia de custódia.</p>
+<blockquote>Código de Processo Penal, artigo 158-A, incluído pela Lei 13.964/2019. Considera-se cadeia de custódia o conjunto de todos os procedimentos utilizados para manter e documentar a história cronológica do vestígio coletado em locais ou em vítimas de crimes, para rastrear sua posse e manuseio a partir de seu reconhecimento até o descarte.</blockquote>
+<p>Como o processamento é local, o depoimento não sai da máquina, o que atende ao dever de sigilo e à proteção de dado pessoal sensível [Lei 13.709/2018].</p>
+
+<h2>Em termos simples</h2>
+<p>Pense num estagiário que ouve a gravação e digita o que cada pessoa falou, anotando o minuto de cada fala. O programa faz o rascunho em poucos minutos, dentro do seu computador. O texto ainda precisa de revisão, como o rascunho de qualquer estagiário.</p>
+
+<h2>Procedimento operacional padrão</h2>
+<h3>Nível 1: operação básica</h3>
+<ol>
+  <li>Baixar o aplicativo e descompactar a pasta inteira.</li>
+  <li>Abrir o programa com duplo clique. No primeiro uso, o modelo é baixado uma vez; depois o programa funciona sem internet.</li>
+  <li>Clicar em escolher arquivo e selecionar o áudio ou vídeo da audiência.</li>
+  <li>Escolher o modelo, começando pelo intermediário, e clicar em transcrever.</li>
+  <li>Ajustar os nomes dos falantes e salvar a ata.</li>
+</ol>
+<h3>Nível 2: uso no Processo Penal</h3>
+<ol>
+  <li>Preservar o arquivo original da gravação, sem sobrescrever, como fonte.</li>
+  <li>Registrar método, data, hora e responsável pela transcrição.</li>
+  <li>Gerar e conferir a soma de verificação [<em>hash</em>] do arquivo de origem, para provar que o áudio não foi alterado.</li>
+  <li>Documentar a cadeia de custódia conforme o Código de Processo Penal, artigos 158-A a 158-F.</li>
+  <li>Guardar a transcrição como peça de trabalho, sinalizando que carece de conferência para o contraditório.</li>
+  <li>Não acionar qualquer integração de nuvem quando o material for sigiloso.</li>
+</ol>
+
+<h2>Revisar com LLM local</h2>
+<p>O aplicativo oferece uma revisão final opcional por modelo de linguagem, com uma diferença central: o modelo roda na própria máquina, pelo programa Ollama, e o texto não sai do computador. A função corrige ortografia, pontuação, concordância e grafia de termos jurídicos, sem resumir, sem inventar e sem alterar o sentido.</p>
+<p>A camada penal e a revisão por modelo cumprem papéis distintos. A camada penal aplica regras fixas que o usuário escreve, com resultado previsível e auditável. A revisão por modelo alcança pontuação e concordância que a lista de regras não cobre, com resultado que varia entre execuções. A revisão vem desligada e depende de instalação do Ollama. Como todo modelo de linguagem pode corrigir de forma equivocada, o texto revisado exige conferência.</p>
+
+<h2>Glossário</h2>
+<p><strong>Transcrição automática de fala</strong>: conversão de áudio em texto por programa de computador, também chamada reconhecimento automático de fala.</p>
+<p><strong>Diarização</strong>: separação do áudio por falante, com atribuição de cada trecho a uma voz distinta.</p>
+<p><strong>Camada penal</strong>: etapa de correção que ajusta, no texto transcrito, a grafia de termos e de dispositivos, por regras editáveis pelo próprio gabinete.</p>
+<p><strong>Modelo de linguagem local</strong>: modelo de linguagem executado no computador do usuário, sem envio de dados para a nuvem.</p>
+<p><strong>Soma de verificação</strong> [<em>hash</em>]: código que identifica um arquivo e denuncia qualquer alteração no seu conteúdo.</p>
+
+<h2>Fontes</h2>
+<ul>
+  <li><a href="https://github.com/ProfAMR404/Transcritor-ProfAMR-2026" target="_blank">Transcritor ProfAMR 2026, repositório do projeto</a></li>
+  <li><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank">faster-whisper, motor de reconhecimento de fala em CPU</a></li>
+  <li><a href="https://github.com/m-bain/whisperX" target="_blank">WhisperX, transcrição com separação de falantes</a></li>
+  <li><a href="https://ollama.com" target="_blank">Ollama, execução local de modelos de linguagem</a></li>
+  <li><a href="https://atos.cnj.jus.br/atos/detalhar/166" target="_blank">Resolução 105/2010 do Conselho Nacional de Justiça</a></li>
+  <li><a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del3689.htm" target="_blank">Código de Processo Penal, artigos 158-A a 158-F</a></li>
+</ul>
