@@ -1,0 +1,54 @@
+name: Build Tauri (Windows)
+
+# Build da casca Tauri v2 com o motor Python como sidecar. Best-effort: roda sob
+# demanda [workflow_dispatch]. Gera os instaladores como artefato para download.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tauri-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar toolchain Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache do cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "app-tauri/src-tauri -> target"
+
+      - name: Gerar o sidecar (motor Python)
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File app-tauri/scripts/build-sidecar.ps1
+
+      - name: Instalar dependencias do frontend
+        working-directory: app-tauri
+        run: npm install
+
+      - name: Gerar icones a partir da logo
+        working-directory: app-tauri
+        run: npx @tauri-apps/cli icon src/assets/logo.png
+
+      - name: Build do instalador Tauri
+        working-directory: app-tauri
+        run: npm run build
+
+      - name: Publicar instaladores (artefato)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TranscritorProfAMR-Tauri-Windows
+          path: app-tauri/src-tauri/target/release/bundle/**
+          if-no-files-found: error

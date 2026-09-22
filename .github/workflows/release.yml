@@ -1,0 +1,65 @@
+name: Release
+
+# Ao empurrar uma tag vX.Y.Z, gera o pacote Windows e publica um Release
+# com o .zip anexado [link de download permanente, visivel quando o repo for publico].
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install faster-whisper pyinstaller
+
+      - name: Empacotar o aplicativo
+        run: >
+          pyinstaller --noconfirm --clean
+          --name TranscritorProfAMR
+          --windowed
+          --collect-all faster_whisper
+          --collect-all ctranslate2
+          --collect-all av
+          --collect-all onnxruntime
+          --collect-all tokenizers
+          --collect-all huggingface_hub
+          --add-data "dados;dados"
+          run_gui.py
+
+      - name: Incluir o criador de atalho e o COMO-USAR
+        shell: pwsh
+        run: |
+          Copy-Item "scripts/Criar atalho na Area de Trabalho.bat" "dist/TranscritorProfAMR/"
+          Copy-Item "COMO-USAR.txt" "dist/TranscritorProfAMR/"
+
+      - name: Compactar
+        shell: pwsh
+        run: Compress-Archive -Path "dist/TranscritorProfAMR/*" -DestinationPath "TranscritorProfAMR-Windows.zip"
+
+      - name: Publicar Release com o instalador
+        uses: softprops/action-gh-release@v2
+        with:
+          files: TranscritorProfAMR-Windows.zip
+          draft: false
+          generate_release_notes: true
+          body: |
+            Transcritor ProfAMR 2026 — pacote Windows.
+
+            Como usar:
+            1. Baixe o TranscritorProfAMR-Windows.zip e descompacte a pasta inteira.
+            2. Abra TranscritorProfAMR.exe [duplo clique]. O atalho na Area de Trabalho e criado no primeiro uso.
+            3. Escolha o audio, transcreva, salve a ata.
+
+            Offline apos a instalacao. Ferramenta livre [MIT].
