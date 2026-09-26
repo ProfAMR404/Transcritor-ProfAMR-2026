@@ -73,7 +73,9 @@ jobs:
           $rel = "$env:RUNNER_TEMP\autoteste.txt"
           $argv = @("--autoteste", $rel, "--modelo", "tiny")
           if (Test-Path "$env:RUNNER_TEMP\fala.wav") { $argv += @("--audio", "$env:RUNNER_TEMP\fala.wav") }
-          $p = Start-Process -FilePath "dist/TranscritorProfAMR/TranscritorProfAMR.exe" -ArgumentList $argv -Wait -PassThru
+          $p = Start-Process -FilePath "dist/TranscritorProfAMR/TranscritorProfAMR.exe" -ArgumentList $argv -PassThru
+          $null = $p.Handle  # sem isto o ExitCode pode vir vazio
+          if (-not $p.WaitForExit(900000)) { $p.Kill(); throw "autoteste nao terminou em 15 min" }
           Get-Content $rel
           if ($p.ExitCode -ne 0) { throw "autoteste falhou [codigo $($p.ExitCode)]" }
 
@@ -91,7 +93,7 @@ jobs:
   ollama:
     needs: windows
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -110,7 +112,10 @@ jobs:
         shell: pwsh
         run: |
           Invoke-WebRequest "https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe" -OutFile OllamaSetup.exe
-          Start-Process OllamaSetup.exe -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          # -Wait do PowerShell 7 espera tambem os filhos; o instalador deixa o
+          # Ollama aberto. Espera-se so o processo do instalador.
+          $i = Start-Process OllamaSetup.exe -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -PassThru
+          if (-not $i.WaitForExit(900000)) { throw "instalador do Ollama nao terminou em 15 min" }
           Start-Sleep 10
           Get-Process | Where-Object { $_.ProcessName -like "ollama*" } | Stop-Process -Force -ErrorAction SilentlyContinue
           Test-Path "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
@@ -125,7 +130,10 @@ jobs:
         run: |
           $rel = "$env:RUNNER_TEMP\autoteste-ollama.txt"
           $argv = @("--autoteste", $rel, "--ollama", "${{ matrix.modo }}", "--modelo-llm", "gemma3:270m")
-          $p = Start-Process -FilePath "app/TranscritorProfAMR.exe" -ArgumentList $argv -Wait -PassThru
+          # O Transcritor deixa o 'ollama serve' rodando: esperar so o .exe.
+          $p = Start-Process -FilePath "app/TranscritorProfAMR.exe" -ArgumentList $argv -PassThru
+          $null = $p.Handle  # sem isto o ExitCode pode vir vazio
+          if (-not $p.WaitForExit(1800000)) { $p.Kill(); throw "autoteste do Ollama nao terminou em 30 min" }
           Get-Content $rel
           if (Test-Path "$env:USERPROFILE\TranscritorProfAMR\transcritor.log") { Get-Content "$env:USERPROFILE\TranscritorProfAMR\transcritor.log" -Tail 40 }
           if ($p.ExitCode -ne 0) { throw "autoteste do Ollama falhou [codigo $($p.ExitCode)]" }
