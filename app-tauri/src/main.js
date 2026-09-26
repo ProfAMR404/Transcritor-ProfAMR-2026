@@ -7,20 +7,6 @@ const fs = window.__TAURI__.fs;
 const el = (id) => document.getElementById(id);
 const estado = { arquivo: null, nome: null };
 
-function hms(seg) {
-  const s = Math.max(0, Math.floor(seg));
-  const h = String(Math.floor(s / 3600)).padStart(2, "0");
-  const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-  const x = String(s % 60).padStart(2, "0");
-  return `${h}:${m}:${x}`;
-}
-
-function montarAta(trechos) {
-  return trechos
-    .map((t) => `[${hms(t.inicio)}] ${t.falante}: ${t.texto}`)
-    .join("\n\n");
-}
-
 async function escolherArquivo() {
   const escolha = await dialog.open({
     multiple: false,
@@ -59,9 +45,11 @@ async function transcrever() {
       el("progresso").textContent = "Erro: " + (res.erro || "desconhecido");
       return;
     }
-    el("ata").value = montarAta(res.trechos);
+    el("ata").value = res.ata;
     el("btn-salvar").disabled = false;
-    el("progresso").textContent = `Concluído · ${res.correcoes} correções · motor ${res.motor}`;
+    const avisos = (res.avisos || []).join(" · ");
+    el("progresso").textContent =
+      `Concluído · ${res.correcoes} correções · motor ${res.motor}` + (avisos ? ` · ${avisos}` : "");
   } catch (e) {
     el("progresso").textContent = "Falha: " + e;
   } finally {

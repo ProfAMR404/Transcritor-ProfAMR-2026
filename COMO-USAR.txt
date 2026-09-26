@@ -1,32 +1,44 @@
 TRANSCRITOR ProfAMR 2026 — COMO USAR (sem programar)
 =====================================================
 
-1) Baixe o projeto:
-   - No GitHub, botao verde "Code" -> "Download ZIP".
-   - Descompacte a pasta em algum lugar (ex.: Area de Trabalho).
+1) INSTALAR [Windows 10/11, 64 bits]
+   - Baixe TranscritorProfAMR-Windows.zip em:
+     https://github.com/ProfAMR404/Transcritor-ProfAMR-2026/releases/latest
+   - Descompacte a PASTA INTEIRA [nao mova so o .exe].
+   - Abra TranscritorProfAMR.exe com duplo clique. O atalho na Area de
+     Trabalho e criado no primeiro uso.
 
-2) Abra o programa (duplo clique):
-   - Windows: INICIAR-WINDOWS.bat
-   - Linux:   INICIAR-LINUX.sh   (ou: bash INICIAR-LINUX.sh)
-   - macOS:   INICIAR-MAC.command (se bloquear: botao direito -> Abrir)
+2) TRANSCREVER
+   - "Escolher arquivo..." -> selecione o audio/video da audiencia.
+   - Modelo de transcricao: "small" e o padrao. "base" e mais rapido;
+     "medium" e mais preciso e mais lento.
+   - "Transcrever". Na PRIMEIRA vez o modelo e baixado da internet
+     [small = cerca de 484 MB]; depois roda offline.
+   - Ao terminar: "Salvar ata como..." ou "Abrir pasta de saida".
+     Os arquivos .txt, .srt e .json ficam em:
+     %USERPROFILE%\TranscritorProfAMR\saida
 
-   Na PRIMEIRA vez ele instala o necessario e baixa o modelo de
-   transcricao (precisa de internet so nesta primeira vez).
-   Isso pode levar alguns minutos. Depois, roda offline.
+3) REVISAO POR MODELO LOCAL [opcional, Ollama]
+   - Baixe o Ollama portatil:
+     https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip
+   - Crie a pasta "ollama" ao lado do TranscritorProfAMR.exe e descompacte
+     o zip dentro dela [deve existir ollama\ollama.exe].
+     [Ou instale: https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe]
+   - No Transcritor: marque "Revisar com modelo de linguagem local" e
+     clique em "Baixar modelo" [gemma3:4b, cerca de 3,3 GB, uma vez so].
+   - Detalhes: OLLAMA.md
 
-3) Na janela que abrir:
-   - Clique em "Escolher arquivo..." e selecione o audio/video da audiencia.
-   - Deixe o modelo em "small" (bom padrao) e clique em "Transcrever".
-   - Ao terminar, clique em "Salvar ata como..." para guardar.
-
-REQUISITOS
-- Windows/macOS: instale o Python de https://www.python.org/downloads/
-  (no Windows, marque "Add Python to PATH" na instalacao).
-- Linux: sudo apt install python3 python3-venv python3-tk
+4) SEM INTERNET [maquina isolada]
+   - Coloque o modelo Whisper na pasta "modelos" ao lado do .exe
+     [ex.: modelos\small\model.bin]. Ver MODELOS.md.
 
 OBSERVACOES
-- Roda em qualquer computador (nao precisa de placa de video).
-- Com placa NVIDIA fica mais rapido e permite separar falantes (WhisperX).
-- O audio nao sai da sua maquina. Nao ligue integracoes de nuvem para
-  material sigiloso.
-- E apoio de trabalho; a ata oficial ainda pede revisao humana.
+- Roda em qualquer computador; nao precisa de placa de video.
+- O motor de CPU nao separa falantes: a ata sai sem indicar quem fala.
+- A ata traz o hash SHA-256 do arquivo de origem, o motor, o modelo e a data.
+- O audio nao sai da sua maquina.
+- E apoio de trabalho; a ata oficial pede conferencia humana com o audio.
+- Log tecnico, se algo falhar: %USERPROFILE%\TranscritorProfAMR\transcritor.log
+
+RODAR A PARTIR DO CODIGO [Windows/Linux/macOS, requer Python 3.10+]
+- Windows: INICIAR-WINDOWS.bat  |  Linux: INICIAR-LINUX.sh  |  macOS: INICIAR-MAC.command

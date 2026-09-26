@@ -21,3 +21,6 @@ modelos/
 
 # Sistema
 .DS_Store
+
+# Ollama portatil e seus modelos (pesados — nunca versionar)
+ollama/

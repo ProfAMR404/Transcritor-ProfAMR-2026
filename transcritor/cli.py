@@ -1,11 +1,11 @@
 """Interface de linha de comando do Transcritor ProfAMR 2026.
 
 Uso:
-    transcritor demo                      # emula o pipeline com a amostra
-    transcritor transcrever audiencia.mp4 # transcricao real (requer GPU + motor)
-    transcritor transcrever a.mp4 --llm   # + revisao por LLM local (Ollama)
-
-Sem GPU/motor instalado, "transcrever" cai automaticamente no modo demo.
+    transcritor demo                                  # amostra embutida
+    transcritor transcrever audiencia.mp4             # transcricao real
+    transcritor transcrever a.mp4 --modelo medium --llm
+    transcritor ollama status                         # servidor e modelos
+    transcritor ollama baixar gemma3:4b               # baixa modelo de revisao
 """
 from __future__ import annotations
 
@@ -13,33 +13,20 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__, paths, pipeline
-
-PASTA_DADOS = paths.pasta_dados()
+from . import __version__, asr, llm_local, paths, pipeline
 
 
-def _relatorio(rel, mapa_rot) -> None:
+def _mostrar(proc, rel, saidas) -> None:
     print("\n" + "=" * 60)
-    print(f"  CAMADA PENAL — {rel.total} correcao(oes) aplicada(s)")
+    print(f"  CAMADA PENAL — {rel.total} ajuste(s)")
+    for chave, n in sorted(rel.penal.ocorrencias.items(), key=lambda kv: -kv[1]):
+        print(f"  {n:>3}x  {chave}")
+    if rel.llm_modelo:
+        print(f"  LLM {rel.llm_modelo}: {rel.llm_alterados} alterado(s), "
+              f"{rel.llm_recusados} recusado(s) pela trava")
+    for aviso in rel.avisos:
+        print(f"  AVISO: {aviso}")
     print("=" * 60)
-    if not rel.ocorrencias:
-        print("  (nenhuma)")
-    for chave, n in sorted(rel.ocorrencias.items(), key=lambda kv: -kv[1]):
-        if n:
-            print(f"  {n:>3}x  {chave}")
-    if mapa_rot:
-        print("\n  Falantes renomeados:")
-        for k, v in mapa_rot.items():
-            print(f"        {k} -> {v}")
-    print("=" * 60 + "\n")
-
-
-def _executar(trechos, destino: Path, nome: str, usar_llm: bool) -> None:
-    processados, rel, mapa_rot = pipeline.processar(
-        trechos, PASTA_DADOS, usar_llm=usar_llm
-    )
-    saidas = pipeline.escrever_saidas(processados, destino, nome)
-    _relatorio(rel, mapa_rot)
     print("Arquivos gerados:")
     for tipo, caminho in saidas.items():
         print(f"  {tipo.upper():>4}: {caminho}")
@@ -47,32 +34,41 @@ def _executar(trechos, destino: Path, nome: str, usar_llm: bool) -> None:
     print(saidas["txt"].read_text(encoding="utf-8"))
 
 
-def cmd_demo(args) -> int:
-    print(">> Modo DEMO (emulado, sem GPU) — amostra dados/exemplo_whisperx.json")
-    trechos = pipeline.carregar_segmentos(PASTA_DADOS / "exemplo_whisperx.json")
-    _executar(trechos, paths.pasta_saida(), "demo_audiencia", args.llm)
+def _rodar(args, demo: bool) -> int:
+    try:
+        proc, rel, saidas, _meta = pipeline.executar(
+            None if demo else args.arquivo,
+            paths.pasta_dados(),
+            Path(args.saida) if args.saida else paths.pasta_saida(),
+            modelo=getattr(args, "modelo", asr.MODELO_PADRAO),
+            usar_llm=args.llm,
+            modelo_llm=args.modelo_llm,
+            progresso=lambda m: print(m, flush=True),
+            demo=demo,
+        )
+    except Exception as e:
+        print(f"ERRO: {e}", file=sys.stderr)
+        return 1
+    _mostrar(proc, rel, saidas)
     return 0
 
 
-def cmd_transcrever(args) -> int:
-    entrada = Path(args.arquivo)
-    if not entrada.exists():
-        print(f"ERRO: arquivo nao encontrado: {entrada}", file=sys.stderr)
-        return 2
-    motor = pipeline.motor_disponivel()
-    if not motor:
-        print(
-            "AVISO: nenhum motor de ASR encontrado.\n"
-            "       Para transcricao real em CPU: pip install faster-whisper\n"
-            "       Rodando em modo DEMO com a amostra.",
-            file=sys.stderr,
-        )
-        return cmd_demo(args)
-    print(f">> Transcrevendo '{entrada.name}' com motor: {motor}")
-    trechos = pipeline.transcrever_entrada(
-        entrada, PASTA_DADOS, motor, paths.pasta_saida(), progresso=lambda m: print(m)
-    )
-    _executar(trechos, paths.pasta_saida(), entrada.stem, args.llm)
+def cmd_ollama(args) -> int:
+    if args.acao == "status":
+        exe, portatil = llm_local.localizar_executavel()
+        print(f"Executavel: {exe or 'nao encontrado'}{' [portatil]' if portatil else ''}")
+        ok = llm_local.iniciar_servidor(lambda m: print(m))
+        print(f"Servidor em {llm_local.url_base()}: {'respondendo' if ok else 'fora do ar'}")
+        if not ok and exe is None:
+            print(llm_local.mensagem_sem_ollama())
+        for m in llm_local.modelos_instalados():
+            print(f"  modelo instalado: {m}")
+        return 0 if ok else 1
+    try:
+        llm_local.baixar_modelo(args.nome, lambda m: print(m, flush=True))
+    except llm_local.ErroLLM as e:
+        print(f"ERRO: {e}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -84,14 +80,28 @@ def main(argv=None) -> int:
     p.add_argument("--versao", action="version", version=f"%(prog)s {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    pd = sub.add_parser("demo", help="emula o pipeline com a amostra embutida")
-    pd.add_argument("--llm", action="store_true", help="revisar com Ollama local")
-    pd.set_defaults(func=cmd_demo)
+    def comuns(sp):
+        sp.add_argument("--llm", action="store_true", help="revisar com Ollama local")
+        sp.add_argument("--modelo-llm", default=llm_local.MODELO_PADRAO,
+                        help=f"modelo do Ollama [padrao {llm_local.MODELO_PADRAO}]")
+        sp.add_argument("--saida", default=None, help="pasta de saida")
+
+    pd = sub.add_parser("demo", help="roda o pipeline com a amostra embutida")
+    comuns(pd)
+    pd.set_defaults(func=lambda a: _rodar(a, demo=True))
 
     pt = sub.add_parser("transcrever", help="transcreve um arquivo de audio/video")
-    pt.add_argument("arquivo", help="caminho do MP4/MP3/WAV")
-    pt.add_argument("--llm", action="store_true", help="revisar com Ollama local")
-    pt.set_defaults(func=cmd_transcrever)
+    pt.add_argument("arquivo", help="caminho do MP4/MP3/WAV/M4A…")
+    pt.add_argument("--modelo", default=asr.MODELO_PADRAO, help="modelo Whisper")
+    comuns(pt)
+    pt.set_defaults(func=lambda a: _rodar(a, demo=False))
+
+    po = sub.add_parser("ollama", help="gerencia o Ollama local")
+    so = po.add_subparsers(dest="acao", required=True)
+    so.add_parser("status", help="localiza/inicia o Ollama e lista modelos")
+    pb = so.add_parser("baixar", help="baixa um modelo de revisao")
+    pb.add_argument("nome", nargs="?", default=llm_local.MODELO_PADRAO)
+    po.set_defaults(func=cmd_ollama)
 
     args = p.parse_args(argv)
     return args.func(args)

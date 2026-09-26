@@ -179,15 +179,14 @@
   <p>Use a camada penal como base confiável. Ligue o modelo para um acabamento mais fino. Como todo modelo de linguagem corrige por vezes de forma equivocada, o texto revisado exige conferência.</p>
   <h3>Como ativar, uma vez só</h3>
   <ol class="steps">
-    <li>Instalar o Ollama em <a href="https://ollama.com/download">ollama.com/download</a>, disponível para Windows, macOS e Linux. O Ollama é o programa que roda o modelo na máquina.</li>
-    <li>Baixar um modelo pelo terminal, com o comando abaixo. O modelo <code class="inl">llama3.1</code> serve como padrão.
-      <pre>ollama pull llama3.1</pre></li>
-    <li>Deixar o Ollama em execução, em segundo plano.</li>
+    <li>Obter o Ollama. No Windows, o modo portátil dispensa instalação: baixar <a href="https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip">ollama-windows-amd64.zip</a> e descompactar numa pasta chamada <code class="inl">ollama</code> ao lado do <code class="inl">TranscritorProfAMR.exe</code>. Instalador: <a href="https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe">OllamaSetup.exe</a>; macOS: <a href="https://github.com/ollama/ollama/releases/latest/download/Ollama.dmg">Ollama.dmg</a>.</li>
+    <li>Na janela do Transcritor, marcar a revisão e clicar em <strong>Baixar modelo</strong>. O modelo padrão é <code class="inl">gemma3:4b</code> [cerca de 3,3 GB, uma única vez].</li>
+    <li>O Transcritor inicia o Ollama sozinho quando a revisão está marcada.</li>
     <li>Na janela do Transcritor, marcar a opção revisar com modelo local antes de transcrever.</li>
   </ol>
   <p>Na linha de comando:</p>
   <pre>transcritor transcrever audiencia.mp4 --llm</pre>
-  <blockquote><p class="note">Sem o Ollama em execução, o programa não quebra. A etapa é ignorada, e o texto sai com a camada penal normal. A revisão por modelo é sempre um extra.</p></blockquote>
+  <blockquote><p class="note">Sem o Ollama ou sem o modelo, o programa não quebra: o texto sai com a camada penal, e a tela e o cabeçalho da ata avisam que a revisão não foi aplicada. Uma trava recusa a proposta do modelo quando ela altera números ou o tamanho do trecho.</p></blockquote>
   <blockquote><p><strong>Cuidado profissional.</strong> O modelo é apoio de redação, não autoridade. A reformulação da pontuação pode mudar a ênfase de um depoimento. Para material sensível, trate a saída como rascunho e confira contra o áudio antes de usar em ata, voto ou memorial.</p></blockquote>
 </section>
 
@@ -222,7 +221,7 @@
     <tbody>
       <tr><td>A janela não abre ou fecha na hora</td><td>No modo com Python, falta o Python. No Windows, reinstalar marcando a opção que adiciona o Python ao caminho. No Linux, instalar o pacote <code class="inl">python3-tk</code>.</td></tr>
       <tr><td>Demora muito para transcrever</td><td>Comportamento normal na CPU. Usar um modelo menor, como <code class="inl">base</code> ou <code class="inl">small</code>, ou uma máquina com placa NVIDIA.</td></tr>
-      <tr><td>A revisão com modelo não muda nada</td><td>O Ollama não está em execução ou o modelo não foi baixado. Rodar <code class="inl">ollama pull llama3.1</code> e deixar o Ollama aberto.</td></tr>
+      <tr><td>A revisão com modelo não muda nada</td><td>O Ollama não foi encontrado ou o modelo não foi baixado. Ver OLLAMA.md e usar o botão Baixar modelo.</td></tr>
       <tr><td>Todos os falantes saem como um só</td><td>O motor de CPU não separa vozes. Ajustar <code class="inl">dados/rotulos.json</code> ou usar a versão com placa NVIDIA.</td></tr>
       <tr><td>Erro ao abrir o executável</td><td>Confirmar que a pasta inteira foi descompactada. Se persistir, copiar a mensagem de erro para a área de tecnologia.</td></tr>
     </tbody>

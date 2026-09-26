@@ -1,0 +1,113 @@
+name: Windows [build, autoteste e Release]
+
+# Empacota o Transcritor para Windows, roda o AUTOTESTE dentro do proprio .exe
+# [imports do motor, camada penal e uma transcricao real com o modelo tiny] e,
+# quando o gatilho e uma tag vX.Y.Z, publica o Release com o .zip anexado.
+on:
+  push:
+    branches: [ main ]
+    tags: [ "v*" ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag do Release a publicar [ex.: v0.2.0]; vazio = so build"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install faster-whisper pyinstaller
+
+      - name: Empacotar o aplicativo
+        run: >
+          pyinstaller --noconfirm --clean
+          --name TranscritorProfAMR
+          --windowed
+          --collect-all faster_whisper
+          --collect-all ctranslate2
+          --collect-all av
+          --collect-all onnxruntime
+          --collect-all tokenizers
+          --collect-all huggingface_hub
+          --add-data "dados;dados"
+          run_gui.py
+
+      - name: Incluir documentos e o criador de atalho
+        shell: pwsh
+        run: |
+          $d = "dist/TranscritorProfAMR"
+          Copy-Item "scripts/Criar atalho na Area de Trabalho.bat" $d
+          Copy-Item "COMO-USAR.txt", "MODELOS.md", "OLLAMA.md", "LICENSE", "CREDITOS.md" $d
+          New-Item -ItemType Directory -Force "$d/modelos" | Out-Null
+          Set-Content "$d/modelos/LEIA-ME.txt" "Para uso 100% offline, coloque aqui a pasta do modelo [ex.: modelos\small\model.bin]. Ver MODELOS.md."
+
+      - name: Gerar audio de teste [voz sintetica do Windows]
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Add-Type -AssemblyName System.Speech
+          $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+          $s.SetOutputToWaveFile("$env:RUNNER_TEMP\fala.wav")
+          $s.Speak("The hearing is open. The prosecutor requests the conviction of the defendant under article thirty three.")
+          $s.Dispose()
+
+      - name: Autoteste dentro do .exe empacotado
+        shell: pwsh
+        run: |
+          $rel = "$env:RUNNER_TEMP\autoteste.txt"
+          $argv = @("--autoteste", $rel, "--modelo", "tiny")
+          if (Test-Path "$env:RUNNER_TEMP\fala.wav") { $argv += @("--audio", "$env:RUNNER_TEMP\fala.wav") }
+          $p = Start-Process -FilePath "dist/TranscritorProfAMR/TranscritorProfAMR.exe" -ArgumentList $argv -Wait -PassThru
+          Get-Content $rel
+          if ($p.ExitCode -ne 0) { throw "autoteste falhou [codigo $($p.ExitCode)]" }
+
+      - name: Compactar
+        shell: pwsh
+        run: Compress-Archive -Path "dist/TranscritorProfAMR/*" -DestinationPath "TranscritorProfAMR-Windows.zip"
+
+      - name: Publicar artefato do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: TranscritorProfAMR-Windows
+          path: TranscritorProfAMR-Windows.zip
+          if-no-files-found: error
+
+      - name: Publicar Release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: TranscritorProfAMR-Windows.zip
+          draft: false
+          generate_release_notes: true
+          body: |
+            Transcritor ProfAMR 2026 — pacote Windows [64 bits].
+
+            1. Baixe o TranscritorProfAMR-Windows.zip e descompacte a pasta inteira.
+            2. Abra TranscritorProfAMR.exe [duplo clique]. O atalho na Área de Trabalho é criado no primeiro uso.
+            3. Escolha o áudio ou vídeo, clique em Transcrever, salve a ata.
+
+            Na primeira transcrição o modelo Whisper é baixado uma vez; depois roda offline.
+
+            Revisão opcional por modelo local [Ollama]:
+            - Portátil, sem instalar: https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip
+              [descompacte numa pasta chamada `ollama` ao lado do TranscritorProfAMR.exe]
+            - Instalador: https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe
+            Depois, no Transcritor: marque a revisão e clique em "Baixar modelo".
+
+            Ferramenta livre [MIT]. A transcrição é apoio; a conferência é humana.

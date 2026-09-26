@@ -17,8 +17,10 @@ Tamanho = arquivo do modelo (`model.bin`). Escolha pelo equilíbrio velocidade �
 
 ## 2. Baixar manualmente (uso offline)
 
-Escolha **um** dos jeitos e salve numa pasta `modelos/<nome>` dentro do projeto
-(ex.: `modelos/small`). O app usa a pasta local automaticamente e não baixa nada.
+Escolha **um** dos jeitos e salve numa pasta `modelos/<nome>` **ao lado do
+`TranscritorProfAMR.exe`** [ou na raiz do projeto, rodando do código; ou em
+`%USERPROFILE%\TranscritorProfAMR\modelos\<nome>`]. Ex.: `modelos/small/model.bin`.
+O app usa a pasta local automaticamente e não baixa nada.
 
 **A) Pelo huggingface-cli (mais simples):**
 ```bash
@@ -56,3 +58,7 @@ são as opções citadas no plano:
 > Para usar um Whisper comum (não-CTranslate2) com o faster-whisper, converta com:
 > `pip install ctranslate2 transformers` e
 > `ct2-transformers-converter --model openai/whisper-large-v3 --output_dir modelos/large-v3 --quantization int8`.
+
+## 4. Revisão por modelo de linguagem [Ollama]
+
+Os modelos de revisão [`gemma3:4b` padrão] são de outro tipo e rodam no Ollama. Links e instruções em [`OLLAMA.md`](OLLAMA.md).

@@ -3,7 +3,8 @@
 Aplica, sobre o texto ja transcrito, um conjunto de regras seguras e auditaveis:
   1. mapa de correcoes ortografico-juridicas (dados/correcoes.json);
   2. normalizacao de referencias a dispositivos ("artigo 33" -> "art. 33",
-     "paragrafo 4" -> "§ 4º");
+     "paragrafo 4" -> "§ 4º", "parágrafo 10" -> "§ 10"), com ordinal ate o nono
+     e cardinal a partir do decimo [LC 95/1998, art. 10, I e III];
   3. normalizacao de espacos e pontuacao.
 
 Tudo aqui e reversivel e explicavel — nada de "alucinacao" de modelo. Cada
@@ -57,7 +58,7 @@ def aplicar_correcoes(
     """
     itens = sorted(correcoes.items(), key=lambda kv: len(kv[0]), reverse=True)
     for errado, certo in itens:
-        if errado.startswith("_"):
+        if errado.startswith("_") or errado.lower() == certo.lower():
             continue
         padrao = re.compile(rf"\b{re.escape(errado)}\b", flags=re.IGNORECASE)
 
@@ -70,22 +71,34 @@ def aplicar_correcoes(
     return texto
 
 
-def normalizar_dispositivos(texto: str, rel: RelatorioCorrecao | None = None) -> str:
-    """'artigo 33' -> 'art. 33'; 'paragrafo 4' / 'parágrafo 4' -> '§ 4º'."""
-    def _art(m: re.Match) -> str:
-        return f"art. {m.group(1)}"
+def _num(n: str) -> str:
+    """Ordinal ate o nono, cardinal a partir do decimo [LC 95/1998, art. 10, I e III]."""
+    return f"{n}º" if int(n) <= 9 else n
 
-    texto, n1 = re.subn(r"\bartigos?\s+(\d+)", _art, texto, flags=re.IGNORECASE)
+
+def normalizar_dispositivos(texto: str, rel: RelatorioCorrecao | None = None) -> str:
+    """'artigo 33' -> 'art. 33'; 'artigo 1' -> 'art. 1º'; 'parágrafo 4' -> '§ 4º'.
+
+    Numeros seguidos de ordinal/letra ja escritos [1º, 217-A] sao preservados.
+    """
+    def _art(m: re.Match) -> str:
+        abrev = "arts." if m.group(1).lower().endswith("s") else "art."
+        return f"{abrev} {_num(m.group(2))}"
+
+    texto, n1 = re.subn(
+        r"\b(artigos?)\s+(\d+)(?![\dºo°ª])", _art, texto, flags=re.IGNORECASE
+    )
 
     def _par(m: re.Match) -> str:
-        return f"§ {m.group(1)}º"
+        simbolo = "§§" if m.group(1).lower().endswith("s") else "§"
+        return f"{simbolo} {_num(m.group(2))}"
 
     texto, n2 = re.subn(
-        r"\bpar[aá]grafo\s+(\d+)\b", _par, texto, flags=re.IGNORECASE
+        r"\b(par[aá]grafos?)\s+(\d+)(?![\dºo°ª])", _par, texto, flags=re.IGNORECASE
     )
     if rel is not None:
         rel.registrar("artigo N", "art. N", n1)
-        rel.registrar("parágrafo N", "§ Nº", n2)
+        rel.registrar("parágrafo N", "§ N", n2)
     return texto
 
 

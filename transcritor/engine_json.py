@@ -7,7 +7,7 @@ Contrato maquina-a-maquina:
 
 Uso:
     python -m transcritor.engine_json transcrever <arquivo> [--modelo small]
-        [--llm] [--saida <dir>] [--dados <dir>]
+        [--llm] [--modelo-llm gemma3:4b] [--saida <dir>] [--dados <dir>]
     python -m transcritor.engine_json demo [--llm]
 """
 from __future__ import annotations
@@ -15,9 +15,10 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
 
-from . import paths, pipeline
+from . import asr, llm_local, paths, pipeline
 
 
 def _progresso(msg: str) -> None:
@@ -29,73 +30,56 @@ def _saida_json(dados: dict, codigo: int = 0) -> int:
     return codigo
 
 
-def _executar(trechos, pasta_dados: Path, pasta_saida: Path, nome: str, usar_llm: bool) -> dict:
-    proc, rel, mapa = pipeline.processar(trechos, pasta_dados, usar_llm=usar_llm)
-    saidas = pipeline.escrever_saidas(proc, pasta_saida, nome)
-    return {
-        "ok": True,
-        "correcoes": rel.total,
-        "ocorrencias": rel.ocorrencias,
-        "mapa_falantes": mapa,
-        "trechos": [t.__dict__ for t in proc],
-        "arquivos": {k: str(v) for k, v in saidas.items()},
-    }
-
-
-def cmd_transcrever(args) -> int:
-    entrada = Path(args.arquivo)
-    if not entrada.exists():
-        return _saida_json({"ok": False, "erro": f"arquivo nao encontrado: {entrada}"}, 2)
+def _rodar(args, demo: bool) -> int:
     pasta_dados = Path(args.dados) if args.dados else paths.pasta_dados()
     pasta_saida = Path(args.saida) if args.saida else paths.pasta_saida()
-    pasta_saida.mkdir(parents=True, exist_ok=True)
-
-    motor = pipeline.motor_disponivel()
-    if not motor:
-        return _saida_json(
-            {"ok": False, "erro": "nenhum motor de ASR instalado",
-             "dica": "instale o motor de CPU: pip install faster-whisper"}, 3)
-
-    _progresso(f"Motor: {motor}")
     try:
-        trechos = pipeline.transcrever_entrada(
-            entrada, pasta_dados, motor, pasta_saida, progresso=_progresso
+        proc, rel, saidas, meta = pipeline.executar(
+            None if demo else args.arquivo, pasta_dados, pasta_saida,
+            modelo=getattr(args, "modelo", asr.MODELO_PADRAO),
+            usar_llm=args.llm, modelo_llm=args.modelo_llm,
+            progresso=_progresso, demo=demo,
         )
-        _progresso("Aplicando camada penal")
-        res = _executar(trechos, pasta_dados, pasta_saida, entrada.stem, args.llm)
-        res["motor"] = motor
-        _progresso("Concluido")
-        return _saida_json(res)
+    except FileNotFoundError as e:
+        return _saida_json({"ok": False, "erro": str(e)}, 2)
     except Exception as e:  # devolve o erro real, sem mascarar
         return _saida_json({"ok": False, "erro": str(e)}, 1)
-
-
-def cmd_demo(args) -> int:
-    pasta_dados = paths.pasta_dados()
-    pasta_saida = paths.pasta_saida()
-    _progresso("Modo demo [amostra embutida]")
-    trechos = pipeline.carregar_segmentos(pasta_dados / "exemplo_whisperx.json")
-    res = _executar(trechos, pasta_dados, pasta_saida, "demo_audiencia", args.llm)
-    res["motor"] = "demo"
     _progresso("Concluido")
-    return _saida_json(res)
+    return _saida_json({
+        "ok": True,
+        "motor": meta.motor,
+        "metadados": asdict(meta),
+        "correcoes": rel.total,
+        "ocorrencias": rel.penal.ocorrencias,
+        "mapa_falantes": rel.mapa_falantes,
+        "llm_alterados": rel.llm_alterados,
+        "llm_recusados": rel.llm_recusados,
+        "avisos": rel.avisos,
+        "trechos": [asdict(t) for t in proc],
+        "ata": saidas["txt"].read_text(encoding="utf-8"),
+        "arquivos": {k: str(v) for k, v in saidas.items()},
+    })
 
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="transcritor-engine")
     sub = p.add_subparsers(dest="cmd", required=True)
 
+    def comuns(sp):
+        sp.add_argument("--llm", action="store_true")
+        sp.add_argument("--modelo-llm", default=llm_local.MODELO_PADRAO)
+        sp.add_argument("--saida", default=None)
+        sp.add_argument("--dados", default=None)
+
     pt = sub.add_parser("transcrever")
     pt.add_argument("arquivo")
-    pt.add_argument("--modelo", default="small")
-    pt.add_argument("--llm", action="store_true")
-    pt.add_argument("--saida", default=None)
-    pt.add_argument("--dados", default=None)
-    pt.set_defaults(func=cmd_transcrever)
+    pt.add_argument("--modelo", default=asr.MODELO_PADRAO)
+    comuns(pt)
+    pt.set_defaults(func=lambda a: _rodar(a, demo=False))
 
     pd = sub.add_parser("demo")
-    pd.add_argument("--llm", action="store_true")
-    pd.set_defaults(func=cmd_demo)
+    comuns(pd)
+    pd.set_defaults(func=lambda a: _rodar(a, demo=True))
 
     args = p.parse_args(argv)
     return args.func(args)
