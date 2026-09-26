@@ -1,7 +1,9 @@
 name: Windows [build, autoteste e Release]
 
 # Empacota o Transcritor para Windows, roda o AUTOTESTE dentro do proprio .exe
-# [imports do motor, camada penal e uma transcricao real com o modelo tiny] e,
+# [imports do motor, camada penal e uma transcricao real com o modelo tiny],
+# testa a integracao com o Ollama oficial nos dois modos [instalado, com proxy
+# do sistema configurado; e portatil baixado pelo proprio Transcritor] e,
 # quando o gatilho e uma tag vX.Y.Z, publica o Release com o .zip anexado.
 on:
   push:
@@ -86,8 +88,58 @@ jobs:
           path: TranscritorProfAMR-Windows.zip
           if-no-files-found: error
 
+  ollama:
+    needs: windows
+    runs-on: windows-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        modo: [instalado, portatil]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: TranscritorProfAMR-Windows
+
+      - name: Descompactar o pacote
+        shell: pwsh
+        run: Expand-Archive TranscritorProfAMR-Windows.zip -DestinationPath app
+
+      - name: Instalar o Ollama oficial e fecha-lo [modo instalado]
+        if: matrix.modo == 'instalado'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest "https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe" -OutFile OllamaSetup.exe
+          Start-Process OllamaSetup.exe -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          Start-Sleep 10
+          Get-Process | Where-Object { $_.ProcessName -like "ollama*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+          Test-Path "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
+          # Proxy do sistema inexistente, como em rede institucional: o
+          # Transcritor tem de falar com o Ollama local sem passar por ele.
+          $k = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+          Set-ItemProperty $k ProxyEnable 1
+          Set-ItemProperty $k ProxyServer "10.255.255.1:3128"
+
+      - name: Autoteste do Ollama dentro do .exe
+        shell: pwsh
+        run: |
+          $rel = "$env:RUNNER_TEMP\autoteste-ollama.txt"
+          $argv = @("--autoteste", $rel, "--ollama", "${{ matrix.modo }}", "--modelo-llm", "gemma3:270m")
+          $p = Start-Process -FilePath "app/TranscritorProfAMR.exe" -ArgumentList $argv -Wait -PassThru
+          Get-Content $rel
+          if (Test-Path "$env:USERPROFILE\TranscritorProfAMR\transcritor.log") { Get-Content "$env:USERPROFILE\TranscritorProfAMR\transcritor.log" -Tail 40 }
+          if ($p.ExitCode -ne 0) { throw "autoteste do Ollama falhou [codigo $($p.ExitCode)]" }
+
+  release:
+    needs: [windows, ollama]
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: TranscritorProfAMR-Windows
+
       - name: Publicar Release
-        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}

@@ -25,14 +25,23 @@ Na primeira transcrição o modelo Whisper escolhido é baixado uma vez [`small`
 
 ### Revisão por modelo local [Ollama, opcional]
 
+Na janela do Transcritor, clique em **Preparar Ollama**. O programa faz o resto:
+
+1. usa o Ollama que já estiver instalado no computador; se não houver, oferece baixar a versão oficial portátil [≈ 1,5 GB, uma vez] para `%USERPROFILE%\TranscritorProfAMR\ollama`;
+2. inicia o Ollama em segundo plano;
+3. oferece baixar o modelo de revisão `gemma3:4b` [≈ 3,3 GB, uma vez];
+4. liga a revisão.
+
+Se o seu Ollama estiver instalado numa pasta incomum, use **Localizar ollama.exe…**. Não é preciso abrir o Ollama: a tela de conta que o `ollama.exe` mostra quando aberto diretamente não é usada pelo Transcritor. Detalhes e links oficiais em [`OLLAMA.md`](OLLAMA.md).
+
+Links oficiais, para quem prefere instalar à mão:
+
 | Opção | Link oficial |
 |---|---|
-| **Portátil** [descompacte numa pasta `ollama` ao lado do `.exe`; o Transcritor inicia o Ollama sozinho] | [`ollama-windows-amd64.zip`](https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip) [≈ 1,46 GB] |
-| Instalador Windows | [`OllamaSetup.exe`](https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe) [≈ 1,57 GB] |
+| Windows portátil | [`ollama-windows-amd64.zip`](https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip) [≈ 1,46 GB] |
+| Windows instalador | [`OllamaSetup.exe`](https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe) [≈ 1,57 GB] |
 | macOS | [`Ollama.dmg`](https://github.com/ollama/ollama/releases/latest/download/Ollama.dmg) |
 | Linux | `curl -fsSL https://ollama.com/install.sh \| sh` |
-
-Depois, na janela do Transcritor: marque **“Revisar com modelo de linguagem local”** e clique em **“Baixar modelo”** [`gemma3:4b`, ≈ 3,3 GB, uma única vez]. Detalhes em [`OLLAMA.md`](OLLAMA.md).
 
 ---
 
