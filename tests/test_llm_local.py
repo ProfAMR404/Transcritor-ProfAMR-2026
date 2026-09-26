@@ -116,3 +116,85 @@ def test_portatil_tem_prioridade(tmp_path, monkeypatch):
     exe.write_bytes(b"")
     monkeypatch.setattr(paths, "pastas_ollama", lambda: [tmp_path / "ollama"])
     assert llm_local.localizar_executavel() == (exe, True)
+
+
+def test_ignora_proxy_do_sistema(ollama, monkeypatch):
+    # Rede institucional: proxy configurado no sistema nao pode esconder o Ollama local.
+    monkeypatch.setenv("http_proxy", "http://10.255.255.1:3128")
+    monkeypatch.setenv("HTTP_PROXY", "http://10.255.255.1:3128")
+    monkeypatch.setenv("no_proxy", "")
+    assert llm_local.disponivel(timeout=3)
+    assert llm_local.modelos_instalados() == ["gemma3:4b"]
+
+
+@pytest.mark.parametrize("host,esperado", [
+    ("", "http://127.0.0.1:11434"),
+    ("0.0.0.0", "http://127.0.0.1:11434"),
+    ("0.0.0.0:11500", "http://127.0.0.1:11500"),
+    ("http://0.0.0.0:11434", "http://127.0.0.1:11434"),
+    ("[::]:11434", "http://127.0.0.1:11434"),
+    ("localhost", "http://localhost:11434"),
+    ("192.168.0.5:8080", "http://192.168.0.5:8080"),
+])
+def test_url_base(monkeypatch, host, esperado):
+    monkeypatch.setenv("OLLAMA_HOST", host)
+    assert llm_local.url_base() == esperado
+
+
+def test_caminho_escolhido_pelo_usuario(tmp_path, monkeypatch):
+    monkeypatch.setattr(paths, "pasta_usuario", lambda: tmp_path)
+    exe = tmp_path / "x" / "ollama.exe"
+    exe.parent.mkdir()
+    exe.write_bytes(b"")
+    llm_local.salvar_caminho(exe)
+    assert llm_local.localizar_executavel() == (exe, False)
+    exe.unlink()  # caminho salvo que sumiu nao pode ser usado
+    assert llm_local.caminho_salvo() is None
+
+
+def test_baixar_ollama_portatil(tmp_path, monkeypatch):
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("ollama.exe", b"MZ")
+        z.writestr("lib/ollama/x.dll", b"x")
+    dados = buf.getvalue()
+
+    class Zip(BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(dados)))
+            self.end_headers()
+            self.wfile.write(dados)
+
+    srv = HTTPServer(("127.0.0.1", 0), Zip)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    monkeypatch.setattr(paths, "pasta_usuario", lambda: tmp_path)
+    monkeypatch.setattr(paths, "pastas_ollama", lambda: [tmp_path / "ollama"])
+    monkeypatch.setitem(llm_local.LINKS_DOWNLOAD, "windows_portatil",
+                        f"http://127.0.0.1:{srv.server_address[1]}/o.zip")
+    monkeypatch.setattr(llm_local, "e_windows", lambda: True)
+    msgs = []
+    exe = llm_local.baixar_ollama_portatil(msgs.append)
+    srv.shutdown()
+    assert exe == tmp_path / "ollama" / "ollama.exe" and exe.read_bytes() == b"MZ"
+    assert any("100%" in m for m in msgs)
+    assert not list(tmp_path.glob("*.parcial"))
+    assert llm_local.localizar_executavel() == (exe, True)
+
+
+@pytest.mark.skipif(__import__("sys").platform != "win32", reason="so no Windows")
+def test_windows_instalado_em_program_files(tmp_path, monkeypatch):
+    exe = tmp_path / "Ollama" / "ollama.exe"
+    exe.parent.mkdir()
+    exe.write_bytes(b"")
+    monkeypatch.setattr(paths, "pastas_ollama", lambda: [tmp_path / "nada"])
+    monkeypatch.setattr(paths, "pasta_usuario", lambda: tmp_path / "u")
+    monkeypatch.setattr(llm_local.shutil, "which", lambda _n: None)
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "vazio"))
+    monkeypatch.setenv("ProgramFiles", str(tmp_path))
+    assert llm_local.localizar_executavel()[0] == exe

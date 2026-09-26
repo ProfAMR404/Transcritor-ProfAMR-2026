@@ -101,9 +101,9 @@ Use a camada penal como base confiável; ligue o LLM para um acabamento mais fin
 Como todo LLM, ele pode “consertar” errado — **sempre revise o resultado**.
 
 ### Como ativar (preparação, uma vez só)
-1. **Obtenha o Ollama** [links oficiais em [`OLLAMA.md`](../OLLAMA.md)]. O jeito mais simples no Windows é o **portátil**: baixe [`ollama-windows-amd64.zip`](https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip) e descompacte numa pasta chamada `ollama` ao lado do `TranscritorProfAMR.exe`. O Transcritor inicia o Ollama sozinho.
-2. No Transcritor, marque **“Revisar com modelo de linguagem local”** e clique em **“Baixar modelo”** [`gemma3:4b`, ≈ 3,3 GB, uma única vez].
-3. Clique em Transcrever.
+1. No Transcritor, clique em **Preparar Ollama** e responda **Sim** às perguntas. O programa usa o Ollama já instalado ou baixa a versão oficial portátil [≈ 1,5 GB], inicia o Ollama e baixa o modelo `gemma3:4b` [≈ 3,3 GB]. Tudo uma única vez.
+2. Ollama instalado numa pasta incomum: **Localizar ollama.exe…**.
+3. Clique em Transcrever. **Não abra o `ollama.exe` diretamente**: a tela de conta que ele mostra não é usada pelo Transcritor.
 
 Linha de comando:
 ```
@@ -144,6 +144,6 @@ transcritor transcrever audiencia.mp4 --llm
 |---|---|
 | A janela não abre / fecha na hora | No jeito com Python: falta o Python (Windows: reinstale marcando *Add to PATH*; Linux: `sudo apt install python3-tk`). |
 | Demora muito | Normal em CPU. Use modelo menor (`base`/`small`) ou máquina com GPU NVIDIA. |
-| Aviso “Revisão por LLM não aplicada” | Ollama ausente ou modelo não baixado. Veja [`OLLAMA.md`](../OLLAMA.md) e use o botão “Baixar modelo”. |
+| Aviso “Revisão por LLM não aplicada” | Ollama ausente ou modelo não baixado. Clique em **Preparar Ollama** [detalhes em [`OLLAMA.md`](../OLLAMA.md)]. |
 | A ata não indica quem fala | O motor de CPU não separa vozes; a ata sai sem atribuição de falante. A separação exige a versão GPU (WhisperX). |
 | Erro ao abrir o `.exe` | Confirme que descompactou a **pasta inteira**. Se persistir, copie a mensagem para a TI. |

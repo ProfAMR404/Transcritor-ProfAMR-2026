@@ -2,7 +2,19 @@
 
 A revisão por modelo de linguagem é **opcional** e **desligada por padrão**. O Transcritor conversa apenas com o Ollama da própria máquina [`http://127.0.0.1:11434`]; nenhum trecho de depoimento vai para a nuvem.
 
-O Transcritor **não embute o Ollama no pacote**: o Ollama para Windows tem cerca de 1,5 GB e é atualizado com frequência. O programa, porém, **roda o Ollama por dentro**: localiza o executável, inicia o servidor sozinho em segundo plano e baixa o modelo pela própria janela, sem terminal.
+## Uso: um botão
+
+Na janela do Transcritor, clique em **Preparar Ollama**:
+
+1. o Transcritor procura o Ollama: pasta portátil, pasta escolhida em **Localizar ollama.exe…**, `PATH`, `%LOCALAPPDATA%\Programs\Ollama`, `Program Files\Ollama` e o registro de instalação do Windows;
+2. se não encontrar, oferece baixar a versão oficial portátil [`ollama-windows-amd64.zip`, ≈ 1,5 GB] para `%USERPROFILE%\TranscritorProfAMR\ollama`;
+3. inicia o Ollama em segundo plano, sem janela;
+4. se o modelo escolhido faltar, oferece baixá-lo [`gemma3:4b`, ≈ 3,3 GB];
+5. liga a revisão.
+
+**Não abra o `ollama.exe` diretamente.** Aberto sem comando, o Ollama mostra uma tela própria de criação de conta [“Create an account … No thanks, I'll use Ollama locally”] e fecha ao recusar. O Transcritor não usa essa tela: chama o Ollama como servidor local, sem conta e sem nuvem.
+
+O Transcritor fala com o Ollama sem passar pelo proxy do sistema [redes institucionais configuram proxy no Windows; a conexão com `127.0.0.1` é local].
 
 ## 1. Links oficiais de download
 
@@ -15,7 +27,7 @@ Links do repositório oficial [`github.com/ollama/ollama`](https://github.com/ol
 | macOS | `Ollama.dmg` | 199 MB | https://github.com/ollama/ollama/releases/latest/download/Ollama.dmg |
 | Linux | script oficial | — | `curl -fsSL https://ollama.com/install.sh \| sh` |
 
-## 2. Modo portátil [Ollama rodando dentro da pasta do Transcritor]
+## 2. Modo portátil montado à mão [alternativa ao botão]
 
 1. Baixe `ollama-windows-amd64.zip`.
 2. Crie uma pasta chamada **`ollama`** dentro da pasta do Transcritor, ao lado do `TranscritorProfAMR.exe`.
@@ -30,8 +42,7 @@ TranscritorProfAMR\
     └── lib\ …
 ```
 
-4. Abra o Transcritor e marque **“Revisar com modelo de linguagem local”**. O programa inicia o `ollama.exe` sozinho.
-5. Clique em **“Baixar modelo”** [uma única vez]. No modo portátil, os modelos ficam em `ollama\models\`, dentro da própria pasta: a pasta inteira pode ser copiada para outro computador, ou para um pendrive, já com o modelo.
+4. Abra o Transcritor e clique em **Preparar Ollama**. O programa inicia o `ollama.exe` sozinho e oferece baixar o modelo. No modo portátil, os modelos ficam em `ollama\models\`, dentro da própria pasta: a pasta inteira pode ser copiada para outro computador, ou para um pendrive, já com o modelo.
 
 Alternativa: a pasta `ollama` também é procurada em `%USERPROFILE%\TranscritorProfAMR\ollama`.
 
@@ -68,7 +79,8 @@ O cabeçalho da ata informa quantos trechos o modelo alterou e quantas propostas
 
 | Sintoma | Causa e solução |
 |---|---|
-| “O Ollama não foi encontrado” | Nenhum Ollama instalado nem pasta `ollama\` ao lado do `.exe`. Siga a seção 2 ou 3. |
-| “O modelo … não está instalado” | Clique em “Baixar modelo” ou rode `ollama pull gemma3:4b`. |
-| Download do modelo falha | O download [só nessa etapa] exige internet e acesso a `registry.ollama.ai`. Redes corporativas podem bloquear: baixe numa rede liberada, no modo portátil, e copie a pasta `ollama\` inteira. |
+| “Ollama não encontrado” | Clique em **Preparar Ollama** e aceite o download, ou use **Localizar ollama.exe…**. |
+| “Encontrado, mas não respondeu” | Feche o Ollama pela bandeja do Windows e clique de novo em **Preparar Ollama**. Detalhes técnicos em `%USERPROFILE%\TranscritorProfAMR\transcritor.log`. |
+| “O modelo … não está instalado” | Clique em **Preparar Ollama**. |
+| Download do modelo falha | O download do modelo é feito pelo próprio Ollama e exige acesso a `registry.ollama.ai`. O Ollama não usa o proxy configurado no Windows, só a variável de ambiente `HTTPS_PROXY`. Em rede institucional com proxy obrigatório, prepare numa rede liberada; depois a revisão roda offline. |
 | Revisão muito lenta | Modelo grande para a máquina. Use `gemma3:4b`, ou desligue a revisão. A camada penal continua ativa. |

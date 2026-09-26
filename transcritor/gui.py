@@ -15,7 +15,6 @@ import os
 import subprocess
 import sys
 import threading
-import webbrowser
 from pathlib import Path
 
 from . import __version__, asr, atalho, llm_local, paths, pipeline
@@ -160,20 +159,33 @@ def iniciar() -> int:
     lbl_ollama = tk.Label(l2, text="Ollama: verificando…", font=F_UI, fg=META, bg=SOFT)
     lbl_ollama.pack(side="left")
 
+    def perguntar(titulo: str, msg: str) -> bool:
+        """askyesno chamado de thread de trabalho: executa na UI e espera."""
+        pronto, resp = threading.Event(), {}
+
+        def _p():
+            resp["v"] = messagebox.askyesno(titulo, msg)
+            pronto.set()
+        na_ui(_p)
+        pronto.wait()
+        return bool(resp.get("v"))
+
     def atualizar_ollama(iniciar_servidor: bool = True):
         def trabalho():
             ok = llm_local.iniciar_servidor() if iniciar_servidor else llm_local.disponivel()
             exe, portatil = llm_local.localizar_executavel()
             instalados = llm_local.modelos_instalados() if ok else []
-            if ok:
+            if ok and instalados:
                 tipo = " [portátil]" if portatil else ""
-                txt = (f"Ollama{tipo}: ativo · modelos instalados: "
-                       f"{', '.join(instalados) if instalados else 'nenhum — use Baixar modelo'}")
+                txt = f"Ollama{tipo}: pronto · modelos: {', '.join(instalados)}"
                 cor = INK
+            elif ok:
+                txt, cor = "Ollama ativo, sem modelo — clique em ‘Preparar Ollama’.", ERRO
             elif exe:
-                txt, cor = f"Ollama encontrado em {exe}, mas não respondeu.", ERRO
+                txt = f"Ollama encontrado [{exe}] — clique em ‘Preparar Ollama’."
+                cor = META
             else:
-                txt, cor = "Ollama não instalado — veja ‘Obter o Ollama’.", META
+                txt, cor = "Ollama não encontrado — clique em ‘Preparar Ollama’.", META
             sugeridos = [m for m, _ in llm_local.MODELOS_SUGERIDOS]
             valores = instalados + [m for m in sugeridos if m not in instalados]
 
@@ -185,63 +197,85 @@ def iniciar() -> int:
             na_ui(aplicar)
         threading.Thread(target=trabalho, daemon=True).start()
 
-    def obter_ollama():
-        janela = tk.Toplevel(app)
-        janela.title("Obter o Ollama")
-        janela.configure(bg=BG)
-        janela.resizable(False, False)
-        lbl(janela, "O Ollama roda o modelo de revisão na própria máquina.",
-            font=F_UI_B).pack(anchor="w", padx=16, pady=(14, 6))
-        itens = [
-            ("Windows — portátil [recomendado: sem instalar]",
-             llm_local.LINKS_DOWNLOAD["windows_portatil"],
-             "Descompacte numa pasta chamada ‘ollama’ ao lado do TranscritorProfAMR.exe. "
-             "O Transcritor inicia o Ollama sozinho."),
-            ("Windows — instalador", llm_local.LINKS_DOWNLOAD["windows_instalador"], ""),
-            ("macOS", llm_local.LINKS_DOWNLOAD["macos"], ""),
-            ("Todas as versões", llm_local.LINKS_DOWNLOAD["pagina"], ""),
-        ]
-        for titulo, url, nota in itens:
-            f = tk.Frame(janela, bg=BG)
-            f.pack(fill="x", padx=16, pady=3)
-            lbl(f, titulo, font=F_UI_B).pack(anchor="w")
-            link = lbl(f, url, fg=GOLD_DEEP, cursor="hand2")
-            link.pack(anchor="w")
-            link.bind("<Button-1>", lambda _e, u=url: webbrowser.open(u))
-            if nota:
-                lbl(f, nota, fg=META, wraplength=560, justify="left").pack(anchor="w")
-        lbl(janela, "Depois: clique em ‘Baixar modelo’ para instalar "
-            f"{llm_local.MODELO_PADRAO} [≈3,3 GB, uma única vez].",
-            fg=META).pack(anchor="w", padx=16, pady=(8, 4))
-        botao(janela, "Fechar", janela.destroy).pack(pady=(4, 14))
-
-    def baixar_modelo():
-        nome = var_llm_modelo.get().strip()
-        if not nome:
-            return
-        if not messagebox.askyesno(
-            "Baixar modelo",
-            f"Baixar o modelo '{nome}' pelo Ollama? O download tem alguns GB e "
-            "ocorre uma única vez; depois a revisão roda offline."):
-            return
+    def preparar_ollama():
+        """Um clique: encontra ou baixa o Ollama, inicia, baixa o modelo."""
+        nome = var_llm_modelo.get().strip() or llm_local.MODELO_PADRAO
         ocupar(True)
 
         def trabalho():
             try:
-                llm_local.baixar_modelo(nome, log)
-                na_ui(messagebox.showinfo, "Modelo pronto", f"{nome} instalado no Ollama.")
+                log("Procurando o Ollama…")
+                if not llm_local.iniciar_servidor(log):
+                    exe, _ = llm_local.localizar_executavel()
+                    if exe is not None:
+                        raise llm_local.ErroLLM(
+                            f"O Ollama foi encontrado em {exe}, mas não respondeu. "
+                            "Feche o Ollama pela bandeja do Windows e clique de novo "
+                            "em ‘Preparar Ollama’.")
+                    if not llm_local.e_windows():
+                        raise llm_local.ErroLLM(llm_local.mensagem_sem_ollama())
+                    if not perguntar(
+                        "Baixar o Ollama",
+                        "O Ollama não foi encontrado neste computador.\n\n"
+                        "Baixar agora a versão oficial portátil [cerca de 1,5 GB, "
+                        "uma única vez] para a pasta\n"
+                        f"{paths.pasta_usuario() / 'ollama'} ?\n\n"
+                        "Se o Ollama já está instalado em outro lugar, responda Não "
+                        "e use ‘Localizar ollama.exe…’."):
+                        log("Preparação cancelada.")
+                        return
+                    llm_local.baixar_ollama_portatil(log)
+                    if not llm_local.iniciar_servidor(log):
+                        raise llm_local.ErroLLM(
+                            "O Ollama foi baixado, mas não iniciou. Veja o arquivo "
+                            f"{paths.pasta_usuario() / 'transcritor.log'}.")
+                if not llm_local.modelo_instalado(nome):
+                    tam = dict(llm_local.MODELOS_SUGERIDOS).get(nome, "alguns GB")
+                    if not perguntar(
+                        "Baixar o modelo",
+                        f"Baixar o modelo de revisão ‘{nome}’ [{tam}], uma única vez? "
+                        "Depois a revisão roda sem internet."):
+                        log("Preparação cancelada.")
+                        return
+                    llm_local.baixar_modelo(nome, log)
+                na_ui(var_llm.set, True)
+                log(f"Ollama pronto com {nome}. A revisão está ligada.")
+                na_ui(messagebox.showinfo, "Ollama pronto",
+                      f"Ollama pronto com o modelo {nome}.\n"
+                      "A revisão por modelo local está ligada.")
             except llm_local.ErroLLM as e:
                 msg = str(e)
+                log("Ollama: " + msg.splitlines()[0])
                 na_ui(messagebox.showerror, "Ollama", msg)
-                log("Falha no download do modelo.")
+            except Exception as e:  # erro inesperado: mostra e registra
+                msg = f"{e.__class__.__name__}: {e}"
+                print(f"[ollama] erro inesperado: {msg}", file=sys.stderr, flush=True)
+                log("Ollama: " + msg)
+                na_ui(messagebox.showerror, "Ollama", msg)
             finally:
                 na_ui(ocupar, False)
                 atualizar_ollama(iniciar_servidor=False)
         threading.Thread(target=trabalho, daemon=True).start()
 
-    btn_baixar = botao(l2, "Baixar modelo", baixar_modelo)
+    def localizar_ollama():
+        cam = filedialog.askopenfilename(
+            title="Selecione o ollama.exe",
+            filetypes=[("Ollama", "ollama.exe ollama"), ("Todos", "*.*")],
+        )
+        if not cam:
+            return
+        exe = Path(cam)
+        if exe.name.lower() not in ("ollama.exe", "ollama"):
+            messagebox.showerror("Ollama", "Selecione o arquivo ollama.exe "
+                                 "[não o ‘ollama app.exe’].")
+            return
+        llm_local.salvar_caminho(exe)
+        log(f"Ollama registrado: {exe}")
+        atualizar_ollama(iniciar_servidor=True)
+
+    btn_baixar = botao(l2, "Preparar Ollama", preparar_ollama)
     btn_baixar.pack(side="right")
-    botao(l2, "Obter o Ollama", obter_ollama).pack(side="right", padx=6)
+    botao(l2, "Localizar ollama.exe…", localizar_ollama).pack(side="right", padx=6)
 
     # ---- Ata ---------------------------------------------------------------
     corpo = tk.Frame(app, bg=BG)

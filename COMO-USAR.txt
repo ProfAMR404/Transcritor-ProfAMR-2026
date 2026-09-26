@@ -19,13 +19,13 @@ TRANSCRITOR ProfAMR 2026 — COMO USAR (sem programar)
      %USERPROFILE%\TranscritorProfAMR\saida
 
 3) REVISAO POR MODELO LOCAL [opcional, Ollama]
-   - Baixe o Ollama portatil:
-     https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip
-   - Crie a pasta "ollama" ao lado do TranscritorProfAMR.exe e descompacte
-     o zip dentro dela [deve existir ollama\ollama.exe].
-     [Ou instale: https://github.com/ollama/ollama/releases/latest/download/OllamaSetup.exe]
-   - No Transcritor: marque "Revisar com modelo de linguagem local" e
-     clique em "Baixar modelo" [gemma3:4b, cerca de 3,3 GB, uma vez so].
+   - Clique em "Preparar Ollama" e responda Sim as perguntas.
+     O Transcritor usa o Ollama ja instalado ou baixa a versao oficial
+     portatil [cerca de 1,5 GB], inicia o Ollama e baixa o modelo
+     gemma3:4b [cerca de 3,3 GB]. Tudo uma unica vez.
+   - Ollama instalado em pasta incomum: "Localizar ollama.exe...".
+   - NAO abra o ollama.exe diretamente: a tela de conta que ele mostra
+     nao e usada pelo Transcritor.
    - Detalhes: OLLAMA.md
 
 4) SEM INTERNET [maquina isolada]

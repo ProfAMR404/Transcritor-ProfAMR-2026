@@ -62,11 +62,35 @@ class ErroLLM(RuntimeError):
 
 # ---------------------------------------------------------------- servidor
 
+def _registrar(msg: str) -> None:
+    """Linha de diagnostico no log [no .exe, stderr vai para transcritor.log]."""
+    try:
+        print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} [ollama] {msg}", file=sys.stderr, flush=True)
+    except Exception:
+        pass
+
+
 def url_base() -> str:
+    """Endereco do servidor local. OLLAMA_HOST=0.0.0.0 [escuta em todas as
+    interfaces] nao serve como destino de conexao: vira 127.0.0.1."""
     host = os.environ.get("OLLAMA_HOST", "").strip() or "127.0.0.1:11434"
-    if not host.startswith("http"):
+    if "://" not in host:
         host = "http://" + host
-    return host.rstrip("/")
+    esquema, _, resto = host.partition("://")
+    resto = resto.rstrip("/")
+    if resto.startswith("["):  # IPv6 [::]:porta
+        nome, _, porta = resto[1:].partition("]")
+        porta = porta.lstrip(":")
+    else:
+        nome, _, porta = resto.partition(":")
+    if nome in ("", "0.0.0.0", "::", "*"):
+        nome = "127.0.0.1"
+    return f"{esquema}://{nome}:{porta or '11434'}"
+
+
+# O Ollama e LOCAL: nunca passar pelo proxy do sistema [redes institucionais
+# configuram proxy no Windows, e o Python o aplicaria ate a 127.0.0.1].
+_LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
 def _requisicao(caminho: str, payload: dict | None = None, timeout: float = 5.0):
@@ -75,7 +99,7 @@ def _requisicao(caminho: str, payload: dict | None = None, timeout: float = 5.0)
         url_base() + caminho, data=dados,
         headers={"Content-Type": "application/json"} if dados else {},
     )
-    return urllib.request.urlopen(req, timeout=timeout)
+    return _LOCAL.open(req, timeout=timeout)
 
 
 def disponivel(timeout: float = 1.5) -> bool:
@@ -106,9 +130,73 @@ def modelo_instalado(nome: str) -> bool:
     return any(_mesmo_modelo(nome, m) for m in modelos_instalados())
 
 
+def _arquivo_config() -> Path:
+    return paths.pasta_usuario() / "config.json"
+
+
+def caminho_salvo() -> Optional[Path]:
+    try:
+        dados = json.loads(_arquivo_config().read_text(encoding="utf-8"))
+        cam = Path(dados.get("ollama_exe", ""))
+        return cam if cam.is_file() else None
+    except (OSError, ValueError):
+        return None
+
+
+def salvar_caminho(exe: Path) -> None:
+    cfg = _arquivo_config()
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        dados = json.loads(cfg.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        dados = {}
+    dados["ollama_exe"] = str(exe)
+    cfg.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _candidatos_windows() -> List[Path]:
+    cands: List[Path] = []
+    for var, sub in (("LOCALAPPDATA", r"Programs\Ollama"), ("LOCALAPPDATA", "Ollama"),
+                     ("ProgramFiles", "Ollama"), ("ProgramW6432", "Ollama"),
+                     ("ProgramFiles(x86)", "Ollama"), ("USERPROFILE", "Ollama")):
+        base = os.environ.get(var)
+        if base:
+            cands.append(Path(base) / sub / "ollama.exe")
+    # Instalador [Inno Setup] registra a pasta escolhida em 'Uninstall'.
+    try:
+        import winreg
+
+        for raiz in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+            try:
+                chave = winreg.OpenKey(raiz, r"Software\Microsoft\Windows\CurrentVersion\Uninstall")
+            except OSError:
+                continue
+            with chave:
+                for i in range(winreg.QueryInfoKey(chave)[0]):
+                    try:
+                        with winreg.OpenKey(chave, winreg.EnumKey(chave, i)) as sub:
+                            nome = str(winreg.QueryValueEx(sub, "DisplayName")[0])
+                            if "ollama" not in nome.lower():
+                                continue
+                            local = str(winreg.QueryValueEx(sub, "InstallLocation")[0])
+                            cands.append(Path(local) / "ollama.exe")
+                    except OSError:
+                        continue
+    except ImportError:
+        pass
+    return cands
+
+
 def localizar_executavel() -> tuple[Optional[Path], bool]:
-    """Devolve [caminho do ollama, e_portatil]. Portatil tem prioridade."""
-    exe = "ollama.exe" if sys.platform == "win32" else "ollama"
+    """Devolve [caminho do ollama, e_portatil].
+
+    Ordem: caminho escolhido pelo usuario; pasta portatil; PATH; pastas de
+    instalacao conhecidas e o registro do Windows.
+    """
+    salvo = caminho_salvo()
+    if salvo:
+        return salvo, False
+    exe = "ollama.exe" if e_windows() else "ollama"
     for base in paths.pastas_ollama():
         for cand in (base / exe, base / "bin" / exe):
             if cand.is_file():
@@ -116,22 +204,74 @@ def localizar_executavel() -> tuple[Optional[Path], bool]:
     no_path = shutil.which("ollama")
     if no_path:
         return Path(no_path), False
-    candidatos = []
+    candidatos: List[Path] = []
     if sys.platform == "win32":
-        local = os.environ.get("LOCALAPPDATA", "")
-        if local:
-            candidatos.append(Path(local) / "Programs" / "Ollama" / "ollama.exe")
+        candidatos = _candidatos_windows()
     elif sys.platform == "darwin":
-        candidatos.append(Path("/Applications/Ollama.app/Contents/Resources/ollama"))
+        candidatos = [Path("/Applications/Ollama.app/Contents/Resources/ollama"),
+                      Path("/usr/local/bin/ollama"), Path("/opt/homebrew/bin/ollama")]
     else:
-        candidatos += [Path("/usr/local/bin/ollama"), Path("/usr/bin/ollama")]
+        candidatos = [Path("/usr/local/bin/ollama"), Path("/usr/bin/ollama")]
     for cand in candidatos:
         if cand.is_file():
             return cand, False
+    _registrar("executavel nao encontrado; procurados: "
+               + "; ".join(str(c) for c in candidatos))
     return None, False
 
 
-def iniciar_servidor(progresso: Progresso = None, espera: float = 30.0) -> bool:
+def e_windows() -> bool:
+    return sys.platform == "win32"
+
+
+def baixar_ollama_portatil(progresso: Progresso = None) -> Path:
+    """Baixa o Ollama portatil oficial [Windows] para ~/TranscritorProfAMR/ollama."""
+    import zipfile
+
+    if not e_windows():
+        raise ErroLLM(mensagem_sem_ollama())
+    avisar = progresso or (lambda _m: None)
+    destino = paths.pasta_usuario() / "ollama"
+    destino.mkdir(parents=True, exist_ok=True)
+    zip_tmp = paths.pasta_usuario() / "ollama-windows-amd64.zip.parcial"
+    url = LINKS_DOWNLOAD["windows_portatil"]
+    _registrar(f"baixando {url}")
+    try:
+        with urllib.request.urlopen(url, timeout=60) as resp, open(zip_tmp, "wb") as f:
+            total = int(resp.headers.get("Content-Length") or 0)
+            feito, ultimo = 0, -1
+            while True:
+                bloco = resp.read(1 << 20)
+                if not bloco:
+                    break
+                f.write(bloco)
+                feito += len(bloco)
+                pct = 100 * feito // total if total else -1
+                if pct != ultimo:
+                    ultimo = pct
+                    avisar(f"Baixando o Ollama: {pct}% [{feito / 1e9:.2f} de {total / 1e9:.2f} GB]"
+                           if total else f"Baixando o Ollama: {feito / 1e9:.2f} GB")
+        if total and feito != total:
+            raise ErroLLM("Download do Ollama incompleto. Tente de novo.")
+        avisar("Descompactando o Ollama…")
+        with zipfile.ZipFile(zip_tmp) as z:
+            z.extractall(destino)
+    except (urllib.error.URLError, OSError, zipfile.BadZipFile) as e:
+        _registrar(f"falha no download/extracao: {e!r}")
+        raise ErroLLM(f"Falha ao baixar o Ollama: {e}") from e
+    finally:
+        try:
+            zip_tmp.unlink()
+        except OSError:
+            pass
+    exe = destino / "ollama.exe"
+    if not exe.is_file():
+        raise ErroLLM(f"O pacote baixado não contém {exe}.")
+    avisar("Ollama instalado na pasta do Transcritor.")
+    return exe
+
+
+def iniciar_servidor(progresso: Progresso = None, espera: float = 60.0) -> bool:
     """Garante um Ollama respondendo. Inicia 'ollama serve' se preciso."""
     if disponivel():
         return True
@@ -152,15 +292,18 @@ def iniciar_servidor(progresso: Progresso = None, espera: float = 30.0) -> bool:
                                    | getattr(subprocess, "DETACHED_PROCESS", 0))
     else:
         opcoes["start_new_session"] = True
+    _registrar(f"iniciando {exe} serve [portatil={portatil}] em {url_base()}")
     try:
         subprocess.Popen([str(exe), "serve"], **opcoes)
-    except OSError:
+    except OSError as e:
+        _registrar(f"falha ao iniciar: {e!r}")
         return False
     limite = time.monotonic() + espera
     while time.monotonic() < limite:
         if disponivel():
             return True
         time.sleep(0.5)
+    _registrar(f"servidor nao respondeu em {url_base()} apos {espera:.0f}s")
     return False
 
 
@@ -216,7 +359,7 @@ def preparar(modelo: str, progresso: Progresso = None) -> None:
     if not modelo_instalado(modelo):
         raise ErroLLM(
             f"O modelo '{modelo}' não está instalado no Ollama. "
-            "Use o botão 'Baixar modelo' ou rode: ollama pull " + modelo
+            "Clique em 'Preparar Ollama' ou rode: ollama pull " + modelo
         )
 
 

@@ -22,6 +22,9 @@ def main(argv=None) -> int:
     p.add_argument("--autoteste", required=True, metavar="RELATORIO")
     p.add_argument("--audio", default=None)
     p.add_argument("--modelo", default="tiny")
+    p.add_argument("--ollama", choices=["instalado", "portatil"], default=None,
+                   help="testa o Ollama: ja instalado, ou baixando o portatil")
+    p.add_argument("--modelo-llm", default="gemma3:270m")
     args = p.parse_args(argv)
 
     linhas = [f"Transcritor ProfAMR v{__version__} — autoteste"]
@@ -71,6 +74,38 @@ def main(argv=None) -> int:
     etapa("pipeline demo + camada penal", demo)
     if args.audio:
         etapa(f"transcricao real [{args.modelo}] de {args.audio}", real)
+
+    if args.ollama:
+        from . import llm_local
+
+        def detectar():
+            if args.ollama == "portatil":
+                llm_local.baixar_ollama_portatil()
+            exe, portatil = llm_local.localizar_executavel()
+            assert exe is not None, "ollama.exe nao encontrado"
+            return f"{exe} [portatil={portatil}]"
+
+        def servidor():
+            assert llm_local.iniciar_servidor(), f"sem resposta em {llm_local.url_base()}"
+            return llm_local.url_base()
+
+        def modelo():
+            llm_local.baixar_modelo(args.modelo_llm)
+            return ", ".join(llm_local.modelos_instalados())
+
+        def revisao():
+            with tempfile.TemporaryDirectory() as tmp:
+                proc, rel, _s, _m = pipeline.executar(
+                    None, paths.pasta_dados(), Path(tmp), demo=True,
+                    usar_llm=True, modelo_llm=args.modelo_llm)
+                assert rel.llm_modelo == args.modelo_llm, f"LLM nao aplicado: {rel.avisos}"
+                return (f"{rel.llm_alterados} alterados, {rel.llm_recusados} recusados; "
+                        f"ex.: {proc[0].texto[:100]}")
+
+        etapa(f"Ollama {args.ollama}: localizar", detectar)
+        etapa("Ollama: iniciar servidor", servidor)
+        etapa(f"Ollama: baixar modelo {args.modelo_llm}", modelo)
+        etapa("Ollama: revisao da amostra", revisao)
 
     linhas.append("RESULTADO: " + ("SUCESSO" if ok else "FALHA"))
     Path(args.autoteste).write_text("\n".join(linhas) + "\n", encoding="utf-8")
