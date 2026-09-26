@@ -4,5 +4,5 @@ Cópia independente (nao fork) inspirada no TecJustica Transcribe (MIT).
 Foco: Direito Penal e Processo Penal, em portugues, 100% offline.
 """
 
-__version__ = "0.1.0"
-__all__ = ["pos_penal", "rotulos", "pipeline", "llm_local", "asr", "gui", "cli"]
+__version__ = "0.2.0"
+__all__ = ["pos_penal", "rotulos", "pipeline", "llm_local", "asr", "gui", "cli", "autoteste"]

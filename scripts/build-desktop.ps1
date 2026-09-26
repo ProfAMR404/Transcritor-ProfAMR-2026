@@ -11,6 +11,12 @@ Write-Host ">> Empacotando com PyInstaller (.exe)" -ForegroundColor Cyan
 pyinstaller --noconfirm --clean `
   --name "TranscritorProfAMR" `
   --windowed `
+  --collect-all faster_whisper `
+  --collect-all ctranslate2 `
+  --collect-all av `
+  --collect-all onnxruntime `
+  --collect-all tokenizers `
+  --collect-all huggingface_hub `
   --add-data "dados;dados" `
   run_gui.py
 

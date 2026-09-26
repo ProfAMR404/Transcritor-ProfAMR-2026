@@ -1,6 +1,6 @@
 [project]
 name = "transcritor-profamr"
-version = "0.1.0"
+version = "0.2.0"
 description = "Transcricao de audiencias penais em portugues, offline, com camada penal."
 readme = "README.md"
 license = { text = "MIT" }

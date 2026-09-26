@@ -101,22 +101,19 @@ Use a camada penal como base confiável; ligue o LLM para um acabamento mais fin
 Como todo LLM, ele pode “consertar” errado — **sempre revise o resultado**.
 
 ### Como ativar (preparação, uma vez só)
-1. **Instale o Ollama** — [ollama.com/download](https://ollama.com/download) (Windows, Mac, Linux). É o programa que roda o LLM localmente.
-2. **Baixe um modelo** no terminal:
-   ```
-   ollama pull llama3.1
-   ```
-   (padrão; baixa uma vez). Mais leve: `llama3.2`. Mais forte: `qwen2.5`.
-3. **Deixe o Ollama aberto** (roda em segundo plano).
-4. No Transcritor, **marque “Revisar com LLM local”** antes de clicar em Transcrever.
+1. **Obtenha o Ollama** [links oficiais em [`OLLAMA.md`](../OLLAMA.md)]. O jeito mais simples no Windows é o **portátil**: baixe [`ollama-windows-amd64.zip`](https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip) e descompacte numa pasta chamada `ollama` ao lado do `TranscritorProfAMR.exe`. O Transcritor inicia o Ollama sozinho.
+2. No Transcritor, marque **“Revisar com modelo de linguagem local”** e clique em **“Baixar modelo”** [`gemma3:4b`, ≈ 3,3 GB, uma única vez].
+3. Clique em Transcrever.
 
 Linha de comando:
 ```
 transcritor transcrever audiencia.mp4 --llm
 ```
 
-> Se o Ollama não estiver rodando, o programa **não quebra**: ignora a etapa e
-> entrega o texto com a camada penal normal. A revisão por LLM é sempre um extra.
+> Se o Ollama ou o modelo faltar, o programa **não quebra**: entrega o texto com a
+> camada penal e **avisa** na tela e no cabeçalho da ata que a revisão não foi aplicada.
+> Uma **trava** recusa a proposta do modelo quando ela muda números [artigo, data,
+> valor] ou o tamanho do trecho; o cabeçalho informa quantas propostas foram recusadas.
 
 > **Cuidado profissional.** O LLM é apoio de redação, não autoridade. Ele pode
 > reformular pontuação de um jeito que muda a ênfase de um depoimento. Para material
@@ -128,9 +125,9 @@ transcritor transcrever audiencia.mp4 --llm
 
 | Arquivo | Para quê |
 |---|---|
-| `.txt` | A ata: falante + horário + fala. Pronto para colar num documento. |
+| `.txt` | A ata: cabeçalho [arquivo, hash SHA-256, motor, modelo, data] + horário + fala. |
 | `.srt` | Legenda com tempos — acompanhar sincronizado com o vídeo. |
-| `.json` | Dados estruturados (tempos por trecho) — para automatizar ou analisar. |
+| `.json` | Dados estruturados: tempos, texto bruto do reconhecimento, texto final e marca de revisão por LLM de cada trecho. |
 
 ---
 
@@ -147,6 +144,6 @@ transcritor transcrever audiencia.mp4 --llm
 |---|---|
 | A janela não abre / fecha na hora | No jeito com Python: falta o Python (Windows: reinstale marcando *Add to PATH*; Linux: `sudo apt install python3-tk`). |
 | Demora muito | Normal em CPU. Use modelo menor (`base`/`small`) ou máquina com GPU NVIDIA. |
-| “Revisar com LLM” não muda nada | Ollama não está rodando ou o modelo não foi baixado. Rode `ollama pull llama3.1` e deixe o Ollama aberto. |
-| Todos os falantes saem como um só | Motor de CPU não separa vozes; ajuste `dados/rotulos.json` ou use a versão GPU (WhisperX). |
+| Aviso “Revisão por LLM não aplicada” | Ollama ausente ou modelo não baixado. Veja [`OLLAMA.md`](../OLLAMA.md) e use o botão “Baixar modelo”. |
+| A ata não indica quem fala | O motor de CPU não separa vozes; a ata sai sem atribuição de falante. A separação exige a versão GPU (WhisperX). |
 | Erro ao abrir o `.exe` | Confirme que descompactou a **pasta inteira**. Se persistir, copie a mensagem para a TI. |
