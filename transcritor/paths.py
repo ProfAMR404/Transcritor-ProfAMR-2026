@@ -7,9 +7,10 @@ Funciona tambem empacotado (PyInstaller). Quando o app roda como executavel
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 
 def empacotado() -> bool:
@@ -51,3 +52,23 @@ def pastas_modelos() -> List[Path]:
 def pastas_ollama() -> List[Path]:
     """Onde procurar o Ollama portatil [conteudo do ollama-windows-amd64.zip]."""
     return [pasta_app() / "ollama", pasta_usuario() / "ollama"]
+
+
+def arquivo_config() -> Path:
+    return pasta_usuario() / "config.json"
+
+
+def ler_config() -> dict:
+    try:
+        dados = json.loads(arquivo_config().read_text(encoding="utf-8"))
+        return dados if isinstance(dados, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def gravar_config(chave: str, valor: Any) -> None:
+    dados = ler_config()
+    dados[chave] = valor
+    cfg = arquivo_config()
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
-from . import __version__, llm_local, rotulos
+from . import __version__, llm_local, rotulos, textos
 from .pos_penal import RelatorioCorrecao, carregar_correcoes, processar_texto
 
 Progresso = Optional[Callable[[str], None]]
@@ -190,7 +190,7 @@ def linha_ata(t: Trecho) -> str:
 
 def cabecalho_ata(meta: Metadados, rel: Relatorio) -> str:
     linhas = [
-        "TRANSCRIÇÃO AUTOMÁTICA — documento de apoio, sujeito a conferência humana",
+        textos.AVISO_ATA,
         f"Arquivo de origem: {meta.arquivo}",
         f"SHA-256 do arquivo: {meta.sha256}" if meta.sha256 else "",
         f"Motor: {meta.motor} · modelo: {meta.modelo} · Transcritor ProfAMR v{meta.versao}",
@@ -205,7 +205,16 @@ def cabecalho_ata(meta: Metadados, rel: Relatorio) -> str:
     if not rel.mapa_falantes and meta.motor == "faster-whisper":
         linhas.append("Falantes: não identificados [o motor não separa vozes]")
     linhas += rel.avisos
-    return "\n".join(l for l in linhas if l) + "\n" + "=" * 72
+    return "\n".join(l for l in linhas if l) + "\n" + SEPARADOR
+
+
+SEPARADOR = "=" * 72
+
+
+def separar_corpo(ata: str) -> str:
+    """Devolve so as falas da ata, sem o cabecalho tecnico [para colar em peca]."""
+    antes, sep, depois = ata.partition(SEPARADOR)
+    return (depois if sep else antes).strip()
 
 
 def escrever_saidas(

@@ -88,3 +88,21 @@ def test_modelo_local_ao_lado_do_programa(tmp_path, monkeypatch):
 def test_arquivo_inexistente(tmp_path):
     with pytest.raises(FileNotFoundError):
         pipeline.executar(tmp_path / "nao.mp4", paths.pasta_dados(), tmp_path)
+
+
+def test_ata_traz_aviso_e_copia_sem_cabecalho(tmp_path):
+    from transcritor import textos
+    _p, _r, saidas, _m = pipeline.executar(None, paths.pasta_dados(), tmp_path, demo=True)
+    ata = saidas["txt"].read_text(encoding="utf-8")
+    assert ata.startswith(textos.AVISO_ATA)
+    corpo = pipeline.separar_corpo(ata)
+    assert corpo.startswith("[00:00:00] Juiz: Declaro aberta")
+    assert "SHA-256" not in corpo and "TRANSCRIÇÃO AUTOMÁTICA" not in corpo
+    assert pipeline.separar_corpo("texto editado sem cabecalho") == "texto editado sem cabecalho"
+
+
+def test_instrucoes_empacotadas():
+    from transcritor import textos
+    txt = textos.instrucoes()
+    assert "INSTRUÇÕES AO USUÁRIO" in txt and "Copiar para o documento" in txt
+    assert textos.SITE in txt
