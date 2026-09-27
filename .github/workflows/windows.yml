@@ -53,7 +53,7 @@ jobs:
         run: |
           $d = "dist/TranscritorProfAMR"
           Copy-Item "scripts/Criar atalho na Area de Trabalho.bat" $d
-          Copy-Item "COMO-USAR.txt", "MODELOS.md", "OLLAMA.md", "LICENSE", "CREDITOS.md" $d
+          Copy-Item "dados/INSTRUCOES-AO-USUARIO.txt", "MODELOS.md", "OLLAMA.md", "LICENSE", "CREDITOS.md" $d
           New-Item -ItemType Directory -Force "$d/modelos" | Out-Null
           Set-Content "$d/modelos/LEIA-ME.txt" "Para uso 100% offline, coloque aqui a pasta do modelo [ex.: modelos\small\model.bin]. Ver MODELOS.md."
 
@@ -160,7 +160,11 @@ jobs:
 
             1. Baixe o TranscritorProfAMR-Windows.zip e descompacte a pasta inteira.
             2. Abra TranscritorProfAMR.exe [duplo clique]. O atalho na Área de Trabalho é criado no primeiro uso.
-            3. Escolha o áudio ou vídeo, clique em Transcrever, salve a ata.
+            3. Escolha o áudio ou vídeo, clique em Transcrever e use "Copiar para o documento" para colar no voto ou na petição.
+
+            Passo a passo completo: INSTRUCOES-AO-USUARIO.txt, na pasta do programa, ou o botão "Instruções ao usuário" na janela.
+
+            Aviso: a transcrição é automática e sujeita a erro. Conferir toda citação com a gravação original antes de usar em qualquer peça.
 
             Na primeira transcrição o modelo Whisper é baixado uma vez; depois roda offline.
 

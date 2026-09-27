@@ -1,0 +1,102 @@
+TRANSCRITOR ProfAMR 2026 — INSTRUÇÕES AO USUÁRIO
+www.profamr.org
+
+AVISO DE USO
+A transcrição é automática e pode conter omissões, palavras trocadas,
+erros de pontuação e falas atribuídas de forma incorreta. O texto não
+substitui a gravação audiovisual, fonte oficial do ato. Conferir toda
+citação com o áudio ou o vídeo original, no minuto indicado entre
+colchetes, antes de usar em voto, decisão, parecer ou petição.
+
+------------------------------------------------------------------
+1. REQUISITOS
+------------------------------------------------------------------
+- Windows 10 ou 11, 64 bits.
+- 8 GB de RAM [16 GB para a revisão com modelo maior].
+- Internet apenas na primeira transcrição e na preparação do Ollama.
+  Depois, o programa roda sem internet.
+
+------------------------------------------------------------------
+2. INSTALAR [uma vez]
+------------------------------------------------------------------
+1) Baixar o arquivo TranscritorProfAMR-Windows.zip em:
+   https://github.com/ProfAMR404/Transcritor-ProfAMR-2026/releases/latest
+2) Clicar com o botão direito no .zip > "Extrair tudo...".
+   Descompactar a PASTA INTEIRA [não mover só o .exe].
+3) Abrir a pasta e dar duplo clique em TranscritorProfAMR.exe.
+4) Se o Windows exibir "O Windows protegeu o computador":
+   clicar em "Mais informações" > "Executar assim mesmo".
+   [O aviso aparece porque o programa não tem assinatura digital paga.]
+5) Na primeira abertura, ler o aviso de uso e clicar em OK.
+   O atalho na Área de Trabalho é criado automaticamente.
+
+------------------------------------------------------------------
+3. TRANSCREVER UMA AUDIÊNCIA
+------------------------------------------------------------------
+1) Clicar em "Escolher arquivo..." e selecionar o áudio ou o vídeo
+   [mp4, mp3, wav, m4a, wma, asf, mkv, mov, ogg, flac].
+2) Escolher o "Modelo de transcrição":
+   - base   = mais rápido, para triagem;
+   - small  = padrão, equilíbrio entre tempo e qualidade;
+   - medium = mais preciso e mais lento.
+3) Clicar em "Transcrever". A barra inferior mostra o progresso.
+   Na primeira vez, o modelo é baixado [small = cerca de 484 MB].
+4) O texto aparece na janela e pode ser editado ali mesmo.
+
+------------------------------------------------------------------
+4. LEVAR O TEXTO PARA O VOTO OU A PETIÇÃO
+------------------------------------------------------------------
+- "Copiar para o documento": copia a transcrição [sem o cabeçalho
+  técnico], com o minuto de cada fala entre colchetes. Colar no
+  Word, no editor do eproc ou em qualquer editor com Ctrl+V.
+- Para copiar só um trecho: selecionar o trecho com o mouse e
+  clicar em "Copiar para o documento" [ou Ctrl+C].
+- "Salvar ata como...": grava o texto completo em arquivo .txt.
+- "Abrir pasta de saída": abre a pasta com os arquivos gerados
+  [.txt com cabeçalho e hash SHA-256; .srt com legendas; .json com
+  os dados de cada trecho].
+
+------------------------------------------------------------------
+5. REVISÃO POR MODELO DE LINGUAGEM LOCAL [opcional]
+------------------------------------------------------------------
+1) Clicar em "Preparar Ollama" e responder Sim às perguntas.
+   O programa usa o Ollama já instalado ou baixa a versão oficial
+   portátil [cerca de 1,5 GB], inicia o Ollama e baixa o modelo
+   gemma3:4b [cerca de 3,3 GB]. Tudo uma única vez.
+2) Ollama instalado em pasta incomum: "Localizar ollama.exe...".
+3) NÃO abrir o ollama.exe diretamente: a tela de criação de conta
+   do Ollama não é usada pelo Transcritor.
+4) Com a opção "Revisar com modelo de linguagem local" marcada, a
+   transcrição passa pela revisão. Uma trava recusa a proposta do
+   modelo que altera números ou o tamanho do trecho.
+
+------------------------------------------------------------------
+6. CONFERÊNCIA OBRIGATÓRIA
+------------------------------------------------------------------
+- Ouvir o trecho original antes de citar qualquer fala.
+- O motor de transcrição não identifica quem fala: indicar o
+  falante com base na gravação.
+- Nomes próprios, números, datas, valores e placas exigem atenção
+  redobrada.
+- O cabeçalho do .txt registra arquivo, hash SHA-256, motor,
+  modelo e data, o que permite vincular o texto à gravação.
+
+------------------------------------------------------------------
+7. ONDE FICAM OS ARQUIVOS
+------------------------------------------------------------------
+- Transcrições: %USERPROFILE%\TranscritorProfAMR\saida
+- Registro técnico [para suporte]:
+  %USERPROFILE%\TranscritorProfAMR\transcritor.log
+- Uso sem internet: colocar o modelo na pasta "modelos" ao lado do
+  .exe [ex.: modelos\small\model.bin]. Ver MODELOS.md.
+
+------------------------------------------------------------------
+8. PROBLEMAS COMUNS
+------------------------------------------------------------------
+- A janela não abre: confirmar que a pasta inteira foi extraída.
+- Transcrição lenta: usar o modelo "base" ou áudio mais curto.
+- "Ollama não encontrado": clicar em "Preparar Ollama" e aceitar o
+  download, ou usar "Localizar ollama.exe...".
+- Download do modelo falha em rede institucional com proxy:
+  preparar numa rede sem proxy; depois a revisão roda offline.
+- Outro erro: enviar a mensagem e o arquivo transcritor.log.

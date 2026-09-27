@@ -130,28 +130,13 @@ def modelo_instalado(nome: str) -> bool:
     return any(_mesmo_modelo(nome, m) for m in modelos_instalados())
 
 
-def _arquivo_config() -> Path:
-    return paths.pasta_usuario() / "config.json"
-
-
 def caminho_salvo() -> Optional[Path]:
-    try:
-        dados = json.loads(_arquivo_config().read_text(encoding="utf-8"))
-        cam = Path(dados.get("ollama_exe", ""))
-        return cam if cam.is_file() else None
-    except (OSError, ValueError):
-        return None
+    cam = paths.ler_config().get("ollama_exe")
+    return Path(cam) if cam and Path(cam).is_file() else None
 
 
 def salvar_caminho(exe: Path) -> None:
-    cfg = _arquivo_config()
-    cfg.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        dados = json.loads(cfg.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        dados = {}
-    dados["ollama_exe"] = str(exe)
-    cfg.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+    paths.gravar_config("ollama_exe", str(exe))
 
 
 def _candidatos_windows() -> List[Path]:

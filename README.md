@@ -19,9 +19,12 @@ Ferramenta livre e gratuita para gabinetes, defensorias, promotorias e escritór
 1. Baixe o **[`TranscritorProfAMR-Windows.zip`](../../releases/latest/download/TranscritorProfAMR-Windows.zip)** na página de **[Releases](../../releases/latest)**.
 2. **Descompacte a pasta inteira** [não mova só o executável].
 3. Abra **`TranscritorProfAMR.exe`** com duplo clique. O atalho na Área de Trabalho é criado no primeiro uso.
-4. Clique em **Escolher arquivo…**, selecione o áudio ou vídeo da audiência, clique em **Transcrever** e salve a ata.
+4. Clique em **Escolher arquivo…**, selecione o áudio ou vídeo da audiência e clique em **Transcrever**.
+5. Clique em **Copiar para o documento** e cole no voto ou na petição com `Ctrl+V` [sem o cabeçalho técnico; para copiar só um trecho, selecione-o antes].
 
-Na primeira transcrição o modelo Whisper escolhido é baixado uma vez [`small` ≈ 484 MB]; depois o programa roda sem internet. Para máquina sem internet, veja [`MODELOS.md`](MODELOS.md). Passo a passo em [`COMO-USAR.txt`](COMO-USAR.txt) e no [`tutorial`](docs/TUTORIAL.md).
+Na primeira transcrição o modelo Whisper escolhido é baixado uma vez [`small` ≈ 484 MB]; depois o programa roda sem internet. Para máquina sem internet, veja [`MODELOS.md`](MODELOS.md). Passo a passo em [`INSTRUCOES-AO-USUARIO.txt`](dados/INSTRUCOES-AO-USUARIO.txt) [também no botão **Instruções ao usuário** da janela] e no [`tutorial`](docs/TUTORIAL.md).
+
+> **Aviso de uso.** A transcrição é gerada automaticamente e pode conter omissões, palavras trocadas, erros de pontuação e falas atribuídas de forma incorreta. O texto não substitui a gravação audiovisual, fonte oficial do ato. Toda citação em voto, decisão, parecer ou petição deve ser conferida com o áudio ou o vídeo original, no minuto indicado entre colchetes. A responsabilidade pelo conteúdo cabe a quem assina o documento.
 
 ### Revisão por modelo local [Ollama, opcional]
 

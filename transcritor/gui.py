@@ -15,9 +15,10 @@ import os
 import subprocess
 import sys
 import threading
+import webbrowser
 from pathlib import Path
 
-from . import __version__, asr, atalho, llm_local, paths, pipeline
+from . import __version__, asr, atalho, llm_local, paths, pipeline, textos
 
 PASTA_DADOS = paths.pasta_dados()
 SAIDA = paths.pasta_saida()
@@ -105,8 +106,43 @@ def iniciar() -> int:
         tk.Label(marca, image=img, bg=BG).pack(side="left")
     except Exception:
         pass
-    lbl(marca, "PROF. AMR", font=F_KICKER, fg=GOLD_DEEP).pack(side="left", padx=12)
+    lbl(marca, "PROF. AMR", font=F_KICKER, fg=GOLD_DEEP).pack(side="left", padx=(12, 8))
+    link_site = lbl(marca, textos.SITE, font=("Segoe UI", 9, "underline"),
+                    fg=GOLD_DEEP, cursor="hand2")
+    link_site.pack(side="left")
+    link_site.bind("<Button-1>", lambda _e: webbrowser.open(textos.SITE_URL))
     tk.Frame(app, bg=GOLD, height=3).pack(fill="x", padx=22, pady=(10, 0))
+
+    def janela_texto(titulo: str, conteudo: str, extra=None):
+        jan = tk.Toplevel(app)
+        jan.title(titulo)
+        jan.configure(bg=BG)
+        jan.geometry("720x620")
+        lbl(jan, titulo, font=F_TITLE, fg=HEAD).pack(anchor="w", padx=18, pady=(14, 6))
+        caixa_txt = scrolledtext.ScrolledText(jan, wrap="word", font=F_MONO, bg="#FFFFFF",
+                                              fg=INK, relief="solid", bd=1, height=10)
+        caixa_txt.pack(fill="both", expand=True, padx=18)
+        caixa_txt.insert("1.0", conteudo)
+        caixa_txt.config(state="disabled")
+        rodape = tk.Frame(jan, bg=BG)
+        rodape.pack(fill="x", padx=18, pady=10)
+        botao(rodape, "Fechar", jan.destroy).pack(side="right")
+        if extra:
+            extra(rodape)
+        return jan
+
+    def mostrar_instrucoes():
+        def extras(rodape):
+            botao(rodape, "Criar atalho na Área de Trabalho", criar_atalho).pack(side="left")
+            botao(rodape, "Abrir " + textos.SITE,
+                  lambda: webbrowser.open(textos.SITE_URL)).pack(side="left", padx=8)
+        janela_texto("Instruções ao usuário", textos.instrucoes(), extras)
+
+    def mostrar_aviso():
+        messagebox.showinfo(textos.AVISO_TITULO, textos.AVISO)
+
+    botao(marca, "Instruções ao usuário", mostrar_instrucoes).pack(side="right")
+    botao(marca, "Aviso de uso", mostrar_aviso).pack(side="right", padx=6)
 
     # ---- Cabecalho ---------------------------------------------------------
     topo = tk.Frame(app, bg=BG)
@@ -372,6 +408,21 @@ def iniciar() -> int:
             Path(destino).write_text(txt.get("1.0", "end-1c"), encoding="utf-8")
             messagebox.showinfo("Salvo", f"Ata salva em:\n{destino}")
 
+    def copiar_documento():
+        try:
+            trecho = txt.get("sel.first", "sel.last")
+        except tk.TclError:  # sem selecao: copia todas as falas, sem cabecalho
+            trecho = pipeline.separar_corpo(txt.get("1.0", "end-1c"))
+        if not trecho.strip():
+            messagebox.showinfo("Copiar", "Transcreva primeiro.")
+            return
+        app.clipboard_clear()
+        app.clipboard_append(trecho)
+        app.update()  # mantem o conteudo na area de transferencia do sistema
+        n = len(trecho.split())
+        log(f"Copiado para a área de transferência [{n} palavras]. Cole no documento "
+            "com Ctrl+V e confira com a gravação.")
+
     def criar_atalho():
         alvo = atalho.criar_atalho_windows()
         if alvo:
@@ -383,11 +434,11 @@ def iniciar() -> int:
 
     btn = botao(acoes, "Transcrever", transcrever, primario=True)
     btn.pack(side="left")
-    botao(acoes, "Salvar ata como…", salvar_como).pack(side="left", padx=8)
-    botao(acoes, "Abrir pasta de saída", lambda: _abrir_pasta(SAIDA)).pack(side="left")
+    botao(acoes, "Copiar para o documento", copiar_documento).pack(side="left", padx=8)
+    botao(acoes, "Salvar ata como…", salvar_como).pack(side="left")
+    botao(acoes, "Abrir pasta de saída", lambda: _abrir_pasta(SAIDA)).pack(side="left", padx=8)
     btn_demo = botao(acoes, "Demonstração", demonstrar)
-    btn_demo.pack(side="left", padx=8)
-    botao(acoes, "Criar atalho", criar_atalho).pack(side="left")
+    btn_demo.pack(side="left")
 
     # Cria o atalho na Area de Trabalho no primeiro uso (Windows/.exe), silencioso.
     def _atalho_inicial():
@@ -401,9 +452,18 @@ def iniciar() -> int:
     tk.Frame(app, bg=RULE, height=1).pack(fill="x", padx=22, pady=(4, 0))
     rod = tk.Frame(app, bg=BG)
     rod.pack(fill="x", padx=22, pady=(6, 12))
-    lbl(rod, "Prof. AMR · Transcritor ProfAMR 2026 · offline · o áudio não sai da "
-        "máquina · a transcrição é apoio, a conferência é humana",
+    lbl(rod, f"{textos.AVISO_CURTO}  ·  offline  ·  {textos.SITE}",
         fg=META, font=("Segoe UI", 8)).pack(side="left")
+
+    # Aviso de uso na primeira abertura [e a cada nova versao].
+    def aviso_inicial():
+        if paths.ler_config().get("aviso_aceito") != __version__:
+            mostrar_aviso()
+            try:
+                paths.gravar_config("aviso_aceito", __version__)
+            except OSError:
+                pass
+    app.after(300, aviso_inicial)
 
     app.mainloop()
     return 0
