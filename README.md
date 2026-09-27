@@ -8,7 +8,7 @@
 
 **Transcrição de audiências e depoimentos judiciais em português, 100% offline, com camada especializada em Direito Penal e Processo Penal.**
 
-Ferramenta livre e gratuita para gabinetes, defensorias, promotorias e escritórios. O áudio **nunca sai da máquina** [requisito de sigilo e de conformidade com a LGPD]. Cópia independente inspirada no [TecJustiça Transcribe](https://github.com/marcosmarf27/tecjustica-transcribe-cli) [MIT]. Créditos em [`CREDITOS.md`](CREDITOS.md).
+Ferramenta livre e gratuita para agentes processuais [investigadores, acusadores, defensores, peritos, julgadores]. O áudio **nunca sai da máquina** [requisito de sigilo e de conformidade com a LGPD].
 
 <p align="center"><img src="docs/assets/tela-principal.png" width="720" alt="Tela principal do Transcritor ProfAMR"></p>
 
