@@ -17,10 +17,11 @@ Ferramenta livre e gratuita para agentes processuais [investigadores, acusadores
 ## Baixar e instalar [Windows 10/11, 64 bits]
 
 1. Baixe o **[`TranscritorProfAMR-Windows.zip`](../../releases/latest/download/TranscritorProfAMR-Windows.zip)** na página de **[Releases](../../releases/latest)**.
-2. **Descompacte a pasta inteira** [não mova só o executável].
-3. Abra **`TranscritorProfAMR.exe`** com duplo clique. O atalho na Área de Trabalho é criado no primeiro uso.
-4. Clique em **Escolher arquivo…**, selecione o áudio ou vídeo da audiência e clique em **Transcrever**.
-5. Clique em **Copiar para o documento** e cole no voto ou na petição com `Ctrl+V` [sem o cabeçalho técnico; para copiar só um trecho, selecione-o antes].
+2. Clique com o botão direito no `.zip`, escolha **Extrair tudo…** e **descompacte a pasta inteira** [não mova só o programa para fora].
+3. Abra a pasta e dê **duplo clique no item `TranscritorProfAMR`**, do tipo **Aplicativo**, com o logo Prof. AMR. O Windows costuma ocultar a terminação `.exe`, então o nome pode aparecer só como **TranscritorProfAMR** [esse é o arquivo certo]. Não abra a pasta `_internal` nem os arquivos de texto ao lado. O atalho na Área de Trabalho é criado no primeiro uso.
+4. Se aparecer a tela azul **O Windows protegeu o computador**, clique em **Mais informações** e depois em **Executar assim mesmo** [o aviso surge porque o programa é gratuito e não tem assinatura digital paga].
+5. Clique em **Escolher arquivo…**, selecione o áudio ou vídeo da audiência e clique em **Transcrever**.
+6. Clique em **Copiar para o documento** e cole no voto ou na petição com `Ctrl+V` [sem o cabeçalho técnico; para copiar só um trecho, selecione-o antes].
 
 Na primeira transcrição o modelo Whisper escolhido é baixado uma vez [`small` ≈ 484 MB]; depois o programa roda sem internet. Para máquina sem internet, veja [`MODELOS.md`](MODELOS.md). Passo a passo em [`INSTRUCOES-AO-USUARIO.txt`](dados/INSTRUCOES-AO-USUARIO.txt) [também no botão **Instruções ao usuário** da janela] e no [`tutorial`](docs/TUTORIAL.md).
 

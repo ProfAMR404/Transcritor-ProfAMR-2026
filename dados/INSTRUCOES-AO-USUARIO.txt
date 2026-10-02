@@ -22,8 +22,12 @@ colchetes, antes de usar em voto, decisão, parecer ou petição.
 1) Baixar o arquivo TranscritorProfAMR-Windows.zip em:
    https://github.com/ProfAMR404/Transcritor-ProfAMR-2026/releases/latest
 2) Clicar com o botão direito no .zip > "Extrair tudo...".
-   Descompactar a PASTA INTEIRA [não mover só o .exe].
-3) Abrir a pasta e dar duplo clique em TranscritorProfAMR.exe.
+   Descompactar a PASTA INTEIRA [não mover só o programa para fora].
+3) Abrir a pasta e dar duplo clique no item TranscritorProfAMR
+   [tipo "Aplicativo", com o logo Prof. AMR]. O Windows costuma
+   ocultar a terminação ".exe", então o nome pode aparecer só como
+   "TranscritorProfAMR" [esse é o arquivo certo]. Não abrir a pasta
+   "_internal" nem os arquivos .md que ficam ao lado.
 4) Se o Windows exibir "O Windows protegeu o computador":
    clicar em "Mais informações" > "Executar assim mesmo".
    [O aviso aparece porque o programa não tem assinatura digital paga.]
