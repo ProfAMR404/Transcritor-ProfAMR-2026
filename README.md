@@ -14,6 +14,9 @@ Ferramenta livre e gratuita para agentes processuais [investigadores, acusadores
 
 ---
 
+> **Para usar o programa, baixe o arquivo pronto:** [**TranscritorProfAMR-Windows.zip**](../../releases/latest/download/TranscritorProfAMR-Windows.zip) [Windows 10/11, 64 bits, sem instalar Python].
+> O botão verde **Code → Download ZIP** desta página baixa o **código-fonte**, que não contém o programa pronto e exige Python 3.11 a 3.14 [ver [Rodar a partir do código](#rodar-a-partir-do-código-qualquer-sistema)].
+
 ## Baixar e instalar [Windows 10/11, 64 bits]
 
 1. Baixe o **[`TranscritorProfAMR-Windows.zip`](../../releases/latest/download/TranscritorProfAMR-Windows.zip)** na página de **[Releases](../../releases/latest)**.
@@ -72,7 +75,11 @@ O processamento é local. Nenhum trecho de depoimento sai da máquina. A revisã
 
 ## Rodar a partir do código [qualquer sistema]
 
-Requer [Python](https://www.python.org/downloads/). No Linux, a janela precisa de `python3-tk`.
+Requer **Python 3.11, 3.12, 3.13 ou 3.14**. O **Python 3.15 ainda não funciona**: o pacote `onnxruntime`, usado pelo motor de transcrição, não tem versão para o 3.15 no Windows, e a instalação falha. No Linux, a janela precisa de `python3-tk`.
+
+**Duplo clique [sem terminal]:** `INICIAR-WINDOWS.bat`, `INICIAR-LINUX.sh` ou `INICIAR-MAC.command`. O iniciador escolhe sozinho um Python compatível instalado [no Windows, pelo lançador `py`], cria o ambiente `.venv`, instala o motor e abre a janela. Sem Python compatível, ou se a instalação falhar, o iniciador para com a explicação e, no Windows, abre a página do programa pronto.
+
+**Terminal:**
 
 ```
 pip install -e ".[cpu]"                # -e: usa a pasta dados/ do projeto
