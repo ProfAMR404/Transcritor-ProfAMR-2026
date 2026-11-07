@@ -61,7 +61,7 @@ jobs:
           set CODIGO=%errorlevel%
           type saida315.txt
           if not "%CODIGO%"=="2" (echo esperado codigo 2, veio %CODIGO% & exit /b 1)
-          findstr /c:"[ERRO] Nenhum Python compativel" saida315.txt || exit /b 1
+          findstr /l /c:"[ERRO] Nenhum Python compativel" saida315.txt || exit /b 1
       - name: "Ambiente antigo com Python 3.15 e refeito com 3.13"
         shell: cmd
         run: '"${{ steps.py315.outputs.python-path }}" -m venv .venv'
