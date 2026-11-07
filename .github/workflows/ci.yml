@@ -29,3 +29,61 @@ jobs:
           pip install pytest
       - name: Rodar os testes
         run: python -m pytest -q tests
+
+  # Caminho do codigo-fonte ["Code > Download ZIP" + INICIAR-WINDOWS.bat]:
+  # Python compativel instala e roda; Python 3.15 e recusado com mensagem;
+  # ambiente .venv criado com Python incompativel e refeito.
+  iniciador-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py315
+        with:
+          python-version: "3.15"
+      - uses: actions/setup-python@v5
+        id: py313
+        with:
+          python-version: "3.13"
+      - name: "Python 3.15: o motor nao instala [registro do motivo]"
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          & "${{ steps.py315.outputs.python-path }}" -m pip download faster-whisper --only-binary=:all: -d $env:RUNNER_TEMP\p315 -q
+          if ($LASTEXITCODE -eq 0) { Write-Host "AVISO: faster-whisper ja instala no 3.15; rever a faixa 3.11-3.14 dos iniciadores" }
+      - name: "Python 3.15: iniciador recusa com mensagem [codigo 2]"
+        shell: cmd
+        env:
+          TRANSCRITOR_SO_TESTAR: "1"
+          TRANSCRITOR_PYTHON: ${{ steps.py315.outputs.python-path }}
+        run: |
+          call INICIAR-WINDOWS.bat > saida315.txt 2>&1
+          set CODIGO=%errorlevel%
+          type saida315.txt
+          if not "%CODIGO%"=="2" (echo esperado codigo 2, veio %CODIGO% & exit /b 1)
+          findstr /c:"Nenhum Python compativel" saida315.txt || exit /b 1
+      - name: "Ambiente antigo com Python 3.15 e refeito com 3.13"
+        shell: cmd
+        run: '"${{ steps.py315.outputs.python-path }}" -m venv .venv'
+      - name: "Python 3.13: iniciador instala o motor e roda a demonstracao"
+        shell: cmd
+        env:
+          TRANSCRITOR_SO_TESTAR: "1"
+          TRANSCRITOR_PYTHON: ${{ steps.py313.outputs.python-path }}
+        run: |
+          call INICIAR-WINDOWS.bat > saida313.txt 2>&1
+          set CODIGO=%errorlevel%
+          type saida313.txt
+          if not "%CODIGO%"=="0" (echo esperado codigo 0, veio %CODIGO% & exit /b 1)
+          findstr /c:"Refazendo o ambiente" saida313.txt || exit /b 1
+          findstr /c:"CAMADA PENAL" saida313.txt || exit /b 1
+      - name: "Escolha automatica [sem TRANSCRITOR_PYTHON]: ambiente pronto, abre a demonstracao"
+        shell: cmd
+        env:
+          TRANSCRITOR_SO_TESTAR: "1"
+        run: |
+          call INICIAR-WINDOWS.bat > saida-auto.txt 2>&1
+          set CODIGO=%errorlevel%
+          type saida-auto.txt
+          if not "%CODIGO%"=="0" (echo esperado codigo 0, veio %CODIGO% & exit /b 1)
+          findstr /c:"CAMADA PENAL" saida-auto.txt || exit /b 1

@@ -21,6 +21,9 @@ colchetes, antes de usar em voto, decisão, parecer ou petição.
 ------------------------------------------------------------------
 1) Baixar o arquivo TranscritorProfAMR-Windows.zip em:
    https://github.com/ProfAMR404/Transcritor-ProfAMR-2026/releases/latest
+   ATENÇÃO: o botão verde "Code > Download ZIP" do GitHub baixa o
+   código-fonte, sem o programa pronto. Baixar sempre o arquivo
+   TranscritorProfAMR-Windows.zip da página de Releases.
 2) Clicar com o botão direito no .zip > "Extrair tudo...".
    Descompactar a PASTA INTEIRA [não mover só o programa para fora].
 3) Abrir a pasta e dar duplo clique no item TranscritorProfAMR
