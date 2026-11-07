@@ -38,7 +38,7 @@ if not defined PY (
 )
 :verificado
 if not defined PY (
-  echo  [!] Nenhum Python compativel encontrado [precisa de 3.11 a 3.14].
+  echo  [ERRO] Nenhum Python compativel encontrado [precisa de 3.11 a 3.14].
   echo      O Python 3.15 ainda nao e suportado pelo motor de transcricao.
   echo(
   echo      CAMINHO RECOMENDADO: baixe o programa pronto, sem Python:
@@ -88,7 +88,7 @@ echo  [3/3] Abrindo o Transcritor...
 "%VPY%" -m transcritor.gui
 if errorlevel 1 (
   echo.
-  echo  [!] Algo deu errado ao abrir. Copie a mensagem acima.
+  echo  [ERRO] Algo deu errado ao abrir. Copie a mensagem acima.
   pause
 )
 endlocal
@@ -96,7 +96,7 @@ exit /b 0
 
 :falhou
 echo(
-echo  [!] A instalacao do motor de transcricao falhou [mensagem acima].
+echo  [ERRO] A instalacao do motor de transcricao falhou [mensagem acima].
 echo      Baixe o programa pronto, que nao precisa de Python:
 echo      %RELEASE%
 echo(
