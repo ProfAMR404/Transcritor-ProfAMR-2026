@@ -106,3 +106,11 @@ def test_instrucoes_empacotadas():
     txt = textos.instrucoes()
     assert "INSTRUÇÕES AO USUÁRIO" in txt and "Copiar para o documento" in txt
     assert textos.SITE in txt
+
+
+def test_versao_coerente_com_pyproject():
+    import re
+    from transcritor import __version__
+    from conftest import RAIZ
+    proj = re.search(r'^version = "(.+)"', (RAIZ / "pyproject.toml").read_text(encoding="utf-8"), re.M).group(1)
+    assert proj == __version__
