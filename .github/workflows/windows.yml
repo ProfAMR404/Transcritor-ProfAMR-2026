@@ -29,6 +29,16 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Conferir tag x versao do codigo [so em Release]
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.tag || github.ref_name }}".TrimStart('v')
+          $codigo = python -c "import transcritor; print(transcritor.__version__)"
+          $proj = (Select-String -Path pyproject.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          Write-Host "tag=$tag codigo=$codigo pyproject=$proj"
+          if ($tag -ne $codigo -or $tag -ne $proj) { throw "Versao divergente: atualize transcritor/__init__.py e pyproject.toml para $tag" }
+
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
